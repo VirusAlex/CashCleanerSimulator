@@ -422,6 +422,83 @@
             transform: translateY(-1px);
             color: white;
         }
+
+        /* Currency buttons */
+        .currency-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .currency-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.9rem;
+        }
+
+        .currency-btn:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .currency-btn.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .currency-flag {
+            font-size: 1.2rem;
+        }
+
+        .currency-code {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        /* Display order switch */
+        .display-order-switch {
+            display: flex;
+            gap: 4px;
+            background: var(--secondary-color);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .order-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .order-btn:hover {
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--text-primary);
+        }
+
+        .order-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -460,12 +537,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="currency" data-i18n="currency">Currency</label>
-                        <select id="currency" required>
-                            <option value="USD" selected>USD</option>
-                            <option value="EUR">EUR</option>
-                            <option value="JPY">JPY</option>
-                        </select>
+                        <label data-i18n="currency">Currency</label>
+                        <div class="currency-buttons" id="currencyButtons">
+                            <button type="button" class="currency-btn" data-currency="USD">
+                                <span class="currency-flag">🇺🇸</span>
+                                <span class="currency-code">USD</span>
+                            </button>
+                            <button type="button" class="currency-btn" data-currency="EUR">
+                                <span class="currency-flag">🇪🇺</span>
+                                <span class="currency-code">EUR</span>
+                            </button>
+                            <button type="button" class="currency-btn" data-currency="JPY">
+                                <span class="currency-flag">🇯🇵</span>
+                                <span class="currency-code">JPY</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="stock-section">
@@ -493,7 +579,17 @@
             </div>
 
             <div class="results-panel">
-                <h2><i class="fas fa-chart-bar"></i> <span data-i18n="results">Results</span></h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2><i class="fas fa-chart-bar"></i> <span data-i18n="results">Results</span></h2>
+                    <div class="display-order-switch" style="display: none;" id="displayOrderSwitch">
+                        <button class="order-btn" data-order="denomination-first" title="50 × 30 bundles">
+                            <i class="fas fa-money-bill"></i>×<i class="fas fa-layer-group"></i>
+                        </button>
+                        <button class="order-btn" data-order="quantity-first" title="30 bundles × 50">
+                            <i class="fas fa-layer-group"></i>×<i class="fas fa-money-bill"></i>
+                        </button>
+                    </div>
+                </div>
                 <div id="results">
                     <div class="loading" style="display: none;">
                         <i class="fas fa-spinner"></i>
@@ -595,6 +691,10 @@
         
         // Store last results to re-render on language change
         let lastResults = null;
+        
+        // Current settings
+        let currentCurrency = 'USD';
+        let displayOrder = 'denomination-first'; // 'denomination-first' or 'quantity-first'
 
         // Detect browser language
         function detectBrowserLanguage() {
@@ -606,12 +706,8 @@
 
         // Initialize language
         function initLanguage() {
-            const savedLang = localStorage.getItem('cash-cleaner-lang');
-            if (savedLang && TRANSLATIONS[savedLang]) {
-                currentLang = savedLang;
-            } else {
-                currentLang = detectBrowserLanguage();
-            }
+            // Load all settings first
+            loadSettings();
             applyLanguage(currentLang);
         }
 
@@ -657,6 +753,71 @@
                 text = text.replace(`{${param}}`, params[param]);
             });
             return text;
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                currency: currentCurrency,
+                displayOrder: displayOrder,
+                language: currentLang
+            };
+            localStorage.setItem('cash-cleaner-settings', JSON.stringify(settings));
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem('cash-cleaner-settings');
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    currentCurrency = settings.currency || 'USD';
+                    displayOrder = settings.displayOrder || 'denomination-first';
+                    if (settings.language) {
+                        currentLang = settings.language;
+                    }
+                } else {
+                    // First time user - detect browser language
+                    currentLang = detectBrowserLanguage();
+                }
+            } catch (e) {
+                console.warn('Failed to load settings:', e);
+                currentLang = detectBrowserLanguage();
+            }
+        }
+
+        // Save stock data to localStorage
+        function saveStockData() {
+            const stockData = {};
+            document.querySelectorAll('#stockInputs input').forEach(input => {
+                const denom = input.dataset.denom;
+                const value = input.value;
+                if (value && value !== '') {
+                    stockData[denom] = value;
+                }
+            });
+            localStorage.setItem('cash-cleaner-stock', JSON.stringify(stockData));
+        }
+
+        // Load stock data from localStorage
+        function loadStockData() {
+            try {
+                const saved = localStorage.getItem('cash-cleaner-stock');
+                if (saved) {
+                    const stockData = JSON.parse(saved);
+                    // Apply to inputs after they're created
+                    setTimeout(() => {
+                        Object.keys(stockData).forEach(denom => {
+                            const input = document.querySelector(`#stockInputs input[data-denom="${denom}"]`);
+                            if (input) {
+                                input.value = stockData[denom];
+                            }
+                        });
+                    }, 100);
+                }
+            } catch (e) {
+                console.warn('Failed to load stock data:', e);
+            }
         }
 
         // ====================================================================
@@ -823,9 +984,8 @@
 
         // Update stock inputs when currency changes
         function updateStockInputs() {
-            const currency = document.getElementById('currency').value;
             const stockInputs = document.getElementById('stockInputs');
-            const denoms = CURRENCIES[currency];
+            const denoms = CURRENCIES[currentCurrency];
             
             stockInputs.innerHTML = '';
             
@@ -838,6 +998,23 @@
                     <input type="number" min="0" placeholder="∞" data-denom="${denom}">
                 `;
                 stockInputs.appendChild(stockInput);
+            });
+            
+            // Load saved stock data
+            loadStockData();
+        }
+
+        // Update currency buttons display
+        function updateCurrencyButtons() {
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.currency === currentCurrency);
+            });
+        }
+
+        // Update display order buttons
+        function updateDisplayOrderButtons() {
+            document.querySelectorAll('.order-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.order === displayOrder);
             });
         }
 
@@ -854,11 +1031,13 @@
         // Display results
         function displayResults(data) {
             const resultsDiv = document.getElementById('results');
+            const displayOrderSwitch = document.getElementById('displayOrderSwitch');
             
             // Store results for language switching
             lastResults = data;
             
             if (data.error) {
+                displayOrderSwitch.style.display = 'none';
                 resultsDiv.innerHTML = `
                     <div class="error">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -868,6 +1047,9 @@
                 return;
             }
 
+            // Show display order switch
+            displayOrderSwitch.style.display = 'flex';
+            
             let html = '';
             
             if (data.has_ideal) {
@@ -907,13 +1089,27 @@
                 `;
                 
                 variant.breakdown.forEach(item => {
+                    let denomDisplay = '';
+                    if (displayOrder === 'denomination-first') {
+                        denomDisplay = `
+                            <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                ${item.denomination}
+                            </span>
+                            × ${item.bundles} ${t('bundlesText')}
+                        `;
+                    } else {
+                        denomDisplay = `
+                            ${item.bundles} ${t('bundlesText')} × 
+                            <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                ${item.denomination}
+                            </span>
+                        `;
+                    }
+                    
                     html += `
                         <div class="breakdown-item" style="border-left-color: ${DENOM_COLORS[item.denomination]};">
                             <div class="denom">
-                                <span class="denom-badge ${getDenomClass(item.denomination)}">
-                                    ${item.denomination}
-                                </span>
-                                × ${item.bundles} ${t('bundlesText')}
+                                ${denomDisplay}
                             </div>
                             <div class="value">
                                 ${formatNumber(item.value)} ${data.currency}
@@ -929,6 +1125,9 @@
             });
 
             resultsDiv.innerHTML = html;
+            
+            // Update display order buttons
+            updateDisplayOrderButtons();
         }
 
         // Optimize function (main logic)
@@ -1053,7 +1252,6 @@
             e.preventDefault();
             
             const amount = parseInt(document.getElementById('amount').value);
-            const currency = document.getElementById('currency').value;
             const maxVariants = parseInt(document.getElementById('maxVariants').value);
             
             // Collect stock data
@@ -1065,6 +1263,9 @@
                     stock[denom] = value;
                 }
             });
+            
+            // Save stock data
+            saveStockData();
             
             // Clear last results when starting new calculation
             lastResults = null;
@@ -1086,7 +1287,7 @@
             // Simulate async processing
             setTimeout(() => {
                 try {
-                    const data = optimize(amount, currency, stock, maxVariants);
+                    const data = optimize(amount, currentCurrency, stock, maxVariants);
                     displayResults(data);
                 } catch (error) {
                     displayResults({error: error.message});
@@ -1102,14 +1303,48 @@
             btn.addEventListener('click', () => {
                 const lang = btn.dataset.lang;
                 applyLanguage(lang);
+                saveSettings();
                 // Re-render stock inputs with new language
                 updateStockInputs();
             });
         });
 
+        // Currency buttons event handlers
+        document.querySelectorAll('.currency-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentCurrency = btn.dataset.currency;
+                updateCurrencyButtons();
+                updateStockInputs();
+                saveSettings();
+            });
+        });
+
+        // Display order buttons event handlers
+        document.querySelectorAll('.order-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                displayOrder = btn.dataset.order;
+                updateDisplayOrderButtons();
+                saveSettings();
+                // Re-render results if they exist
+                if (lastResults) {
+                    displayResults(lastResults);
+                }
+            });
+        });
+
+        // Stock inputs change handlers (save on input)
+        document.addEventListener('input', (e) => {
+            if (e.target.matches('#stockInputs input')) {
+                // Debounce saving
+                clearTimeout(window.saveStockTimeout);
+                window.saveStockTimeout = setTimeout(saveStockData, 500);
+            }
+        });
+
         // Initialize
         initLanguage();
-        document.getElementById('currency').addEventListener('change', updateStockInputs);
+        updateCurrencyButtons();
+        updateDisplayOrderButtons();
         updateStockInputs();
     </script>
 </body>
