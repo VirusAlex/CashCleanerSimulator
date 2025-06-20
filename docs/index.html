@@ -156,13 +156,70 @@
             text-align: center;
         }
 
+        .stock-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
         .stock-input input {
             width: 80px;
             padding: 8px;
+            padding-right: 32px;
             text-align: center;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 0.9rem;
+            -moz-appearance: textfield; /* Hide Firefox spinners */
+        }
+
+        .stock-input input::-webkit-outer-spin-button,
+        .stock-input input::-webkit-inner-spin-button {
+            -webkit-appearance: none; /* Hide Chrome/Safari spinners */
+            margin: 0;
+        }
+
+        .stock-spinner {
+            position: absolute;
+            right: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .stock-spinner-btn {
+            width: 20px;
+            height: 14px;
+            border: none;
+            background: var(--border-color);
+            color: var(--text-secondary);
+            font-size: 10px;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stock-spinner-btn:first-child {
+            border-radius: 4px 4px 0 0;
+        }
+
+        .stock-spinner-btn:last-child {
+            border-radius: 0 0 4px 4px;
+        }
+
+        .stock-spinner-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .stock-spinner-btn:active {
+            transform: scale(0.95);
         }
 
         .btn {
@@ -640,7 +697,7 @@
                 amountTooltip: 'Amount must be divisible by 100',
                 currency: 'Currency',
                 stockRemaining: 'Bundle Stock',
-                stockTooltip: 'Leave empty for unlimited quantity',
+                stockTooltip: 'Leave empty for unlimited quantity, enter 0 to exclude denomination. Use ↑/↓ arrows to toggle.',
                 variantsCount: 'Number of Variants',
                 optimizeBtn: 'Optimize',
                 results: 'Results',
@@ -666,7 +723,7 @@
                 amountTooltip: 'Сумма должна быть кратна 100',
                 currency: 'Валюта',
                 stockRemaining: 'Остатки пачек',
-                stockTooltip: 'Оставьте пустым для неограниченного количества',
+                stockTooltip: 'Оставьте пустым для неограниченного количества, введите 0 чтобы исключить номинал. Используйте ↑/↓ для переключения.',
                 variantsCount: 'Количество вариантов',
                 optimizeBtn: 'Оптимизировать',
                 results: 'Результаты',
@@ -792,7 +849,7 @@
             document.querySelectorAll('#stockInputs input').forEach(input => {
                 const denom = input.dataset.denom;
                 const value = input.value;
-                if (value && value !== '') {
+                if (value !== '') {
                     stockData[denom] = value;
                 }
             });
@@ -938,7 +995,7 @@
         // Normalize stock
         function normalizeStock(denoms, bundlesStock) {
             const stock = {};
-            denoms.forEach(d => stock[d] = bundlesStock && bundlesStock[d] ? bundlesStock[d] : INFINITY);
+            denoms.forEach(d => stock[d] = bundlesStock && bundlesStock[d] !== undefined ? bundlesStock[d] : INFINITY);
             return stock;
         }
 
@@ -995,7 +1052,13 @@
                 stockInput.className = 'stock-input';
                 stockInput.innerHTML = `
                     <label style="background-color: ${color};">${denom}</label>
-                    <input type="number" min="0" placeholder="∞" data-denom="${denom}">
+                    <div class="stock-input-container">
+                        <input type="number" min="0" placeholder="∞" data-denom="${denom}">
+                        <div class="stock-spinner">
+                            <button type="button" class="stock-spinner-btn" data-action="up" data-denom="${denom}">▲</button>
+                            <button type="button" class="stock-spinner-btn" data-action="down" data-denom="${denom}">▼</button>
+                        </div>
+                    </div>
                 `;
                 stockInputs.appendChild(stockInput);
             });
@@ -1152,7 +1215,7 @@
                     Object.keys(stock).forEach(denomStr => {
                         const denom = parseInt(denomStr);
                         const qty = parseInt(stock[denomStr]);
-                        if (qty > 0) {
+                        if (!isNaN(qty)) {
                             bundlesStock[denom] = qty;
                         }
                     });
@@ -1259,7 +1322,7 @@
             document.querySelectorAll('#stockInputs input').forEach(input => {
                 const denom = input.dataset.denom;
                 const value = input.value;
-                if (value && value !== '') {
+                if (value !== '') {
                     stock[denom] = value;
                 }
             });
@@ -1332,13 +1395,159 @@
             });
         });
 
-        // Stock inputs change handlers (save on input)
+
+
+        // Stock inputs keyboard handlers for arrow keys
+        document.addEventListener('keydown', (e) => {
+            if (e.target.matches('#stockInputs input')) {
+                const input = e.target;
+                const currentValue = input.value;
+                
+                if (e.key === 'ArrowUp') {
+                    // If empty, set to 0
+                    if (currentValue === '' || currentValue === null) {
+                        e.preventDefault();
+                        input.value = '0';
+                        // Trigger input event to save
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    // If 0, clear the field (set to infinity)
+                    if (currentValue === '0') {
+                        e.preventDefault();
+                        input.value = '';
+                        // Trigger input event to save
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    } else if (currentValue === '' || currentValue === null) {
+                        // If empty, prevent default behavior (don't set to 0)
+                        e.preventDefault();
+                    }
+                }
+            }
+        });
+
+        // Stock inputs change handler for manual input
         document.addEventListener('input', (e) => {
             if (e.target.matches('#stockInputs input')) {
                 // Debounce saving
                 clearTimeout(window.saveStockTimeout);
                 window.saveStockTimeout = setTimeout(saveStockData, 500);
             }
+        });
+
+        // Auto-repeat functionality for spinner buttons
+        let spinnerRepeatTimer = null;
+        let spinnerInitialTimer = null;
+
+        // Function to perform spinner action
+        function performSpinnerAction(button) {
+            const action = button.dataset.action;
+            const input = button.closest('.stock-input-container').querySelector('input');
+            const currentValue = input.value.trim();
+            
+            if (action === 'up') {
+                if (currentValue === '' || currentValue === null) {
+                    // Empty field -> 0 (exclude denomination)
+                    input.value = '0';
+                } else {
+                    // Normal increment
+                    const num = parseInt(currentValue) || 0;
+                    input.value = num + 1;
+                }
+            } else if (action === 'down') {
+                if (currentValue === '0') {
+                    // 0 -> empty field (unlimited)
+                    input.value = '';
+                } else {
+                    // Normal decrement (but don't go below 0)
+                    const num = parseInt(currentValue) || 0;
+                    if (num > 0) {
+                        input.value = num - 1;
+                    }
+                }
+            }
+            
+            // Trigger input event to save
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        // Function to start auto-repeat
+        function startSpinnerRepeat(button) {
+            // Clear any existing timers
+            clearTimeout(spinnerInitialTimer);
+            clearInterval(spinnerRepeatTimer);
+            
+            // Initial delay before starting repeat
+            spinnerInitialTimer = setTimeout(() => {
+                // Start repeating
+                spinnerRepeatTimer = setInterval(() => {
+                    performSpinnerAction(button);
+                }, 100); // Repeat every 100ms
+            }, 500); // Initial delay 500ms
+        }
+
+        // Function to stop auto-repeat
+        function stopSpinnerRepeat() {
+            clearTimeout(spinnerInitialTimer);
+            clearInterval(spinnerRepeatTimer);
+            spinnerRepeatTimer = null;
+            spinnerInitialTimer = null;
+        }
+
+        // Mouse down handler for spinner buttons
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.matches('.stock-spinner-btn')) {
+                const button = e.target;
+                
+                // Prevent text selection
+                e.preventDefault();
+                
+                // Immediate action
+                performSpinnerAction(button);
+                
+                // Start auto-repeat
+                startSpinnerRepeat(button);
+                
+                // Add visual feedback
+                button.style.transform = 'scale(0.9)';
+            }
+        });
+
+        // Mouse up handler for spinner buttons
+        document.addEventListener('mouseup', (e) => {
+            if (e.target.matches('.stock-spinner-btn')) {
+                const button = e.target;
+                
+                // Stop auto-repeat
+                stopSpinnerRepeat();
+                
+                // Remove visual feedback
+                setTimeout(() => {
+                    button.style.transform = '';
+                }, 100);
+            }
+        });
+
+        // Mouse leave handler for spinner buttons (stop repeat if mouse leaves button)
+        document.addEventListener('mouseleave', (e) => {
+            if (e.target.matches('.stock-spinner-btn')) {
+                const button = e.target;
+                
+                // Stop auto-repeat
+                stopSpinnerRepeat();
+                
+                // Remove visual feedback
+                button.style.transform = '';
+            }
+        });
+
+        // Global mouse up handler (in case mouse is released outside button)
+        document.addEventListener('mouseup', () => {
+            stopSpinnerRepeat();
+            // Remove visual feedback from all buttons
+            document.querySelectorAll('.stock-spinner-btn').forEach(btn => {
+                btn.style.transform = '';
+            });
         });
 
         // Initialize
