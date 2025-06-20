@@ -39,9 +39,35 @@
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             min-height: 100vh;
             padding: 20px;
             color: var(--text-primary);
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        /* Currency-specific backgrounds */
+        body.currency-usd {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('usd.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        body.currency-eur {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('eur.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        body.currency-jpy {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('jpy.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
         .container {
@@ -1074,6 +1100,15 @@
             });
         }
 
+        // Update background based on currency
+        function updateCurrencyBackground() {
+            // Remove all currency classes
+            document.body.classList.remove('currency-usd', 'currency-eur', 'currency-jpy');
+            
+            // Add current currency class
+            document.body.classList.add(`currency-${currentCurrency.toLowerCase()}`);
+        }
+
         // Update display order buttons
         function updateDisplayOrderButtons() {
             document.querySelectorAll('.order-btn').forEach(btn => {
@@ -1377,6 +1412,7 @@
             btn.addEventListener('click', () => {
                 currentCurrency = btn.dataset.currency;
                 updateCurrencyButtons();
+                updateCurrencyBackground();
                 updateStockInputs();
                 saveSettings();
             });
@@ -1553,6 +1589,7 @@
         // Initialize
         initLanguage();
         updateCurrencyButtons();
+        updateCurrencyBackground();
         updateDisplayOrderButtons();
         updateStockInputs();
     </script>
