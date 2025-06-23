@@ -423,6 +423,213 @@
             font-weight: 300;
         }
 
+        /* Block Visualization Modal */
+        .block-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .block-modal.show {
+            display: flex;
+        }
+
+        .block-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            /* position: relative; */
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .block-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+            z-index: 100;
+        }
+
+        .block-modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .block-visualization {
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .block-container {
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .block-container:hover {
+            box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .block-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .block-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+            margin: 10px;
+            image-rendering: crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .block-3d:hover {
+            transform: scale(1.05);
+            image-rendering: crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+        }
+
+        .block-layer {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            position: relative;
+        }
+
+        .block-layer.bottom {
+            /* transform: translateY(0px) translateZ(10px); */
+            margin-top: 6px;
+        }
+
+        .block-layer.top {
+            /* transform: translateY(0px); */
+            margin-bottom: 6px;
+        }
+
+        .stack {
+            width: 60px;
+            height: 80px;
+            position: relative;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: flex-end;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .stack:hover {
+            transform: translateZ(5px);
+        }
+
+        .bundle {
+            width: 100%;
+            height: 14px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+            margin-bottom: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            image-rendering: crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .bundle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .bundle.animate {
+            animation: bundleAppear 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        @keyframes bundleAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stack-label {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .visualization-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .viz-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            background: white;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .viz-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .viz-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
         /* Responsive design */
         @media (max-width: 768px) {
             .main-content {
@@ -706,6 +913,22 @@
         </div>
     </div>
 
+    <!-- Block Visualization Modal -->
+    <div class="block-modal" id="blockModal">
+        <div class="block-modal-content">
+            <button class="block-modal-close" id="closeBlockModal">&times;</button>
+            <div class="block-visualization">
+                <div class="block-title" id="blockModalTitle" data-i18n="blockVisualization">Block Visualization</div>
+                <div class="block-3d" id="block3d">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div style="text-align: center;">
+                    <button class="viz-btn" onclick="document.getElementById('blockModal').classList.remove('show')" data-i18n="closeDialog">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Constants
         const BUNDLE_SIZE = 100;
@@ -759,7 +982,9 @@
                 networkError: 'Network error:',
                 calculating: 'Calculating...',
                 bundlesText: 'bundles',
-                viewOnGitHub: 'View on GitHub'
+                viewOnGitHub: 'View on GitHub',
+                blockVisualization: 'Block Visualization',
+                closeDialog: 'Close',
             },
             ru: {
                 title: 'Cash Cleaner Calculator',
@@ -788,7 +1013,9 @@
                 networkError: 'Ошибка сети:',
                 calculating: 'Вычисление...',
                 bundlesText: 'пачек',
-                viewOnGitHub: 'Посмотреть на GitHub'
+                viewOnGitHub: 'Посмотреть на GitHub',
+                blockVisualization: 'Визуализация блока',
+                closeDialog: 'Закрыть',
             }
         };
 
@@ -1321,10 +1548,11 @@
                 
                 html += `
                     <div class="variant ${variantClass}">
-                        <div class="variant-header">
+                        <div class="variant-header" style="cursor: pointer;" onclick="showBlockVisualization(${JSON.stringify(variant).replace(/"/g, '&quot;')})" title="Click to visualize structure">
                             <div class="variant-type">
                                 <i class="fas fa-${isIdeal ? 'cubes' : 'layer-group'}"></i>
                                 ${isIdeal ? t('idealBlocks', {count: variant.blocks}) : t('bundles', {count: variant.total_bundles})}
+                                <i class="fas fa-eye" style="margin-left: 8px; opacity: 0.7; font-size: 0.8em;"></i>
                             </div>
                             <div class="variant-total">
                                 ${formatNumber(variant.total_value)} ${data.currency}
@@ -1830,6 +2058,307 @@
             document.querySelectorAll('.stock-spinner-btn').forEach(btn => {
                 btn.style.transform = '';
             });
+        });
+
+        // ====================================================================
+        // BLOCK VISUALIZATION
+        // ====================================================================
+
+        let rotationInterval = null;
+
+        // Show block visualization modal
+        function showBlockVisualization(variant) {
+            const modal = document.getElementById('blockModal');
+            const title = document.getElementById('blockModalTitle');
+            
+            let titleText = `${formatNumber(variant.total_value)} ${lastResults.currency}`;
+            title.textContent = titleText;
+            
+            buildBlockVisualization(variant);
+            modal.classList.add('show');
+
+            animateBlockBuild();
+        }
+
+        // Calculate total value of a specific block
+        function calculateBlockValue(variant, blockNum) {
+            // Создаем плоский массив РОВНО тех пачек, которые посчитал калькулятор
+            const allBundles = [];
+            
+            if (variant.type === 'ideal' || variant.type === 'loose') {
+                // Для идеальных и loose блоков - используем bundles
+                variant.breakdown.forEach(item => {
+                    for (let i = 0; i < item.bundles; i++) {
+                        allBundles.push({ 
+                            denomination: item.denomination, 
+                            value: item.denomination * 100 
+                        });
+                    }
+                });
+            } else if (variant.type === 'partial') {
+                // Для частичных блоков - используем точные значения
+                variant.breakdown.forEach(item => {
+                    if (item.type === 'full') {
+                        // Полные пачки
+                        for (let i = 0; i < item.bundles; i++) {
+                            allBundles.push({ 
+                                denomination: item.denomination,
+                                value: item.denomination * 100
+                            });
+                        }
+                    } else if (item.type === 'partial') {
+                        // Частичная пачка - точное значение
+                        allBundles.push({ 
+                            denomination: item.denomination,
+                            value: item.value
+                        });
+                    }
+                });
+            }
+            
+            // Вычисляем сумму для конкретного блока
+            let blockValue = 0;
+            for (let i = 0; i < BLOCK_SIZE; i++) {
+                const bundleIndex = blockNum * BLOCK_SIZE + i;
+                if (bundleIndex < allBundles.length) {
+                    blockValue += allBundles[bundleIndex].value;
+                }
+            }
+            
+            return blockValue;
+        }
+
+        // Build 3D block visualization
+        function buildBlockVisualization(variant) {
+            const block3d = document.getElementById('block3d');
+            block3d.innerHTML = '';
+            
+            // Определяем количество блоков для визуализации
+            let numBlocks;
+            if (variant.type === 'ideal') {
+                numBlocks = variant.blocks;
+            } else {
+                // Для loose и partial вариантов создаем виртуальные блоки
+                const totalItems = variant.breakdown.reduce((sum, item) => {
+                    if (variant.type === 'loose') {
+                        return sum + item.bundles;
+                    } else if (variant.type === 'partial') {
+                        return sum + (item.type === 'full' ? item.bundles : 1);
+                    }
+                    return sum;
+                }, 0);
+                numBlocks = Math.ceil(totalItems / BLOCK_SIZE); // 30 items per block
+            }
+            
+            // Create block structure for each block
+            for (let blockNum = 0; blockNum < numBlocks; blockNum++) {
+                const blockContainer = document.createElement('div');
+                blockContainer.className = 'block-container';
+                
+                if (numBlocks > 1) {
+                    const blockLabel = document.createElement('div');
+                    blockLabel.className = 'block-title';
+                    blockLabel.style.fontSize = '1.2rem';
+                    const blockValue = calculateBlockValue(variant, blockNum);
+                    blockLabel.textContent = `${blockNum + 1}. ${formatNumber(blockValue)} ${lastResults.currency}`;
+                    blockContainer.appendChild(blockLabel);
+                }
+                
+                const blockElement = document.createElement('div');
+                blockElement.className = 'block-3d';
+                
+                // Top layer (stacks 4, 5, 6) - создаем вторым, CSS поднимет его выше
+                const topLayer = createBlockLayer(variant, 'top', blockNum);
+                blockElement.appendChild(topLayer);
+                
+                // Bottom layer (stacks 1, 2, 3) - создаем первым для правильной анимации
+                const bottomLayer = createBlockLayer(variant, 'bottom', blockNum);
+                blockElement.appendChild(bottomLayer);
+                
+                blockContainer.appendChild(blockElement);
+                
+                // Add click handler for re-animation to the entire container
+                blockContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    animateSingleBlock(blockElement);
+                });
+                
+                block3d.appendChild(blockContainer);
+            }
+        }
+
+        // Create a layer of the block (3 stacks)
+        function createBlockLayer(variant, layerType, blockNum) {
+            const layer = document.createElement('div');
+            layer.className = `block-layer ${layerType}`;
+            
+            for (let stackNum = 0; stackNum < 3; stackNum++) {
+                const stack = createStack(variant, stackNum, layerType, blockNum);
+                layer.appendChild(stack);
+            }
+            
+            return layer;
+        }
+
+        // Create a single stack (5 bundles)
+        function createStack(variant, stackNum, layerType, blockNum) {
+            const stack = document.createElement('div');
+            stack.className = 'stack';
+            
+            // Calculate which denominations to show in this stack
+            const bundlesInStack = distributeBundlesInStack(variant, stackNum, layerType, blockNum);
+            
+            for (let bundleNum = 0; bundleNum < 5; bundleNum++) {
+                const bundle = createBundle(bundlesInStack[bundleNum]);
+                stack.appendChild(bundle);
+            }
+            
+            // Add stack label
+            const label = document.createElement('div');
+            label.className = 'stack-label';
+            const stackGlobalNum = layerType === 'bottom' ? stackNum + 1 : stackNum + 4;
+            // label.textContent = `Stack ${stackGlobalNum}`;
+            stack.appendChild(label);
+            
+            return stack;
+        }
+
+        // Distribute real bundles across stacks according to calculation results
+        function distributeBundlesInStack(variant, stackNum, layerType, blockNum) {
+            // Создаем плоский массив РОВНО тех пачек, которые посчитал калькулятор
+            const allBundles = [];
+            
+            if (variant.type === 'ideal' || variant.type === 'loose') {
+                // Для идеальных и loose блоков - используем bundles
+                variant.breakdown.forEach(item => {
+                    for (let i = 0; i < item.bundles; i++) {
+                        allBundles.push({ 
+                            denomination: item.denomination,
+                            type: 'full'
+                        });
+                    }
+                });
+            } else if (variant.type === 'partial') {
+                // Для частичных блоков - разбираем bills на полные и частичные пачки
+                variant.breakdown.forEach(item => {
+                    if (item.type === 'full') {
+                        // Полные пачки
+                        for (let i = 0; i < item.bundles; i++) {
+                            allBundles.push({ 
+                                denomination: item.denomination,
+                                type: 'full'
+                            });
+                        }
+                    } else if (item.type === 'partial') {
+                        // Частичная пачка
+                        allBundles.push({ 
+                            denomination: item.denomination,
+                            type: 'partial',
+                            bills: item.bills
+                        });
+                    }
+                });
+            }
+            
+            // Константы
+            const stacksPerBlock = 6; // 6 стопок в блоке
+            const bundlesPerStack = 5; // 5 пачек в стопке
+            const bundlesPerBlock = stacksPerBlock * bundlesPerStack; // 30 пачек в блоке
+            
+            // Глобальный номер стопки в КОНКРЕТНОМ блоке (0-5)
+            const globalStackNum = layerType === 'bottom' ? stackNum : stackNum + 3;
+            
+            // Извлекаем 5 пачек для этой стопки из конкретного блока
+            const stackBundles = [];
+            for (let i = 0; i < bundlesPerStack; i++) {
+                // ВАЖНО: распределяем пачки последовательно по блокам
+                const bundleIndex = blockNum * bundlesPerBlock + globalStackNum * bundlesPerStack + i;
+                if (bundleIndex < allBundles.length) {
+                    stackBundles.push(allBundles[bundleIndex]);
+                } else {
+                    // Если пачек не хватает, заполняем пустышкой
+                    stackBundles.push({ denomination: 100, type: 'empty' });
+                }
+            }
+            
+            return stackBundles;
+        }
+
+        // Create a single bundle
+        function createBundle(bundleInfo) {
+            const bundle = document.createElement('div');
+            bundle.className = 'bundle';
+            
+            if (bundleInfo.type === 'empty') {
+                // Пустая пачка - показываем прозрачной
+                bundle.style.backgroundColor = 'transparent';
+                bundle.style.border = '1px dashed rgba(0, 0, 0, 0.2)';
+                bundle.textContent = '';
+            } else if (bundleInfo.type === 'partial') {
+                // Частичная пачка - диагональная заливка
+                const color = DENOM_COLORS[bundleInfo.denomination] || '#64748b';
+                bundle.style.background = `linear-gradient(15deg, ${color} 50%, rgba(255,255,255,0.7) 50%)`;
+                bundle.style.border = `2px solid ${color}`;
+                bundle.textContent = bundleInfo.denomination;
+                bundle.title = `Partial pack: ${bundleInfo.bills} bills`;
+            } else {
+                // Полная пачка
+                bundle.style.backgroundColor = DENOM_COLORS[bundleInfo.denomination] || '#64748b';
+                bundle.textContent = bundleInfo.denomination;
+                bundle.title = `Full pack: ${BUNDLE_SIZE} bills`;
+            }
+            
+            return bundle;
+        }
+
+        // Animation functions
+        function animateBlockBuild() {
+            // Анимируем каждый блок параллельно
+            const blockElements = document.querySelectorAll('#block3d .block-3d');
+            blockElements.forEach((blockElement, blockIndex) => {
+                animateSingleBlock(blockElement);
+            });
+        }
+
+        // Animate a single block
+        function animateSingleBlock(blockElement) {
+            // Для каждого блока анимируем сначала нижний слой, потом верхний
+            const bottomBundles = blockElement.querySelectorAll('.block-layer.bottom .bundle');
+            const topBundles = blockElement.querySelectorAll('.block-layer.top .bundle');
+            
+            // Объединяем в правильном порядке для этого блока
+            const blockBundles = [...bottomBundles, ...topBundles];
+            
+            blockBundles.forEach((bundle, bundleIndex) => {
+                bundle.classList.remove('animate');
+                bundle.style.opacity = '0';
+                bundle.style.transform = 'translateY(-20px)';
+                
+                // Анимируем внутри блока последовательно
+                setTimeout(() => {
+                    bundle.classList.add('animate');
+                }, bundleIndex * 25);
+            });
+        }
+
+        // Event handlers for block visualization
+        document.getElementById('closeBlockModal').addEventListener('click', () => {
+            document.getElementById('blockModal').classList.remove('show');
+            if (rotationInterval) {
+                clearInterval(rotationInterval);
+                rotationInterval = null;
+            }
+        });
+
+        // Close modal on background click
+        document.getElementById('blockModal').addEventListener('click', (e) => {
+            if (e.target.id === 'blockModal') {
+                document.getElementById('blockModal').classList.remove('show');
+                if (rotationInterval) {
+                    clearInterval(rotationInterval);
+                    rotationInterval = null;
+                }
+            }
         });
 
         // Initialize
