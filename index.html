@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash Cleaner Optimizer</title>
+    <title>Cash Cleaner Calculator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -557,6 +558,12 @@
             background: var(--secondary-color);
             border-radius: 8px;
             padding: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        #stockModeSwitch.display-order-switch {
+            background: white;
         }
 
         .order-btn {
@@ -600,15 +607,15 @@
         </a>
 
         <div class="header">
-            <h1><i class="fas fa-money-bill-wave"></i> <span data-i18n="title">Cash Cleaner Optimizer</span></h1>
-            <p data-i18n="subtitle">Optimize cash packaging into bundles and blocks</p>
+            <h1><i class="fas fa-money-bill-wave"></i> <span data-i18n="title">Cash Cleaner Calculator</span></h1>
+            <p data-i18n="subtitle">Calculate cash packaging into bundles and blocks</p>
         </div>
 
         <div class="main-content">
             <div class="input-panel">
                 <h2><i class="fas fa-sliders-h"></i> <span data-i18n="orderParams">Order Parameters</span></h2>
                 
-                <form id="optimizerForm">
+                <form id="calculatorForm">
                     <div class="form-group">
                         <label for="amount">
                             <span data-i18n="orderAmount">Order Amount</span>
@@ -616,7 +623,7 @@
                                 <i class="fas fa-info-circle"></i>
                             </span>
                         </label>
-                        <input type="number" id="amount" step="100" min="100" placeholder="300000" required>
+                        <input type="number" id="amount" step="1" min="1" placeholder="85000" required>
                     </div>
 
                     <div class="form-group">
@@ -638,12 +645,22 @@
                     </div>
 
                     <div class="stock-section">
-                        <h3>
-                            <span data-i18n="stockRemaining">Bundle Stock</span>
-                            <span class="info-tooltip" data-tooltip-i18n="stockTooltip" data-tooltip="Leave empty for unlimited quantity">
-                                <i class="fas fa-info-circle"></i>
-                            </span>
-                        </h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3>
+                                <span id="stockTitle" data-i18n="stockRemaining">Bundle Stock</span>
+                                <span class="info-tooltip" id="stockTooltip" data-tooltip-i18n="stockTooltip" data-tooltip="Leave empty for unlimited quantity">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </h3>
+                            <div class="display-order-switch" id="stockModeSwitch">
+                                <button type="button" class="order-btn active" data-mode="bundles" title="Bundle Stock">
+                                    <i class="fas fa-layer-group"></i>
+                                </button>
+                                <button type="button" class="order-btn" data-mode="bills" title="Loose Bills Stock">
+                                    <i class="fas fa-money-bill"></i>
+                                </button>
+                            </div>
+                        </div>
                         <div class="stock-inputs" id="stockInputs">
                             <!-- Stock inputs will be populated by JavaScript -->
                         </div>
@@ -654,9 +671,9 @@
                         <input type="number" id="maxVariants" min="1" max="100" value="10">
                     </div>
 
-                    <button type="submit" class="btn" id="optimizeBtn">
+                    <button type="submit" class="btn" id="calculateBtn">
                         <i class="fas fa-calculator"></i>
-                        <span data-i18n="optimizeBtn">Optimize</span>
+                        <span data-i18n="calculateBtn">Calculate</span>
                     </button>
                 </form>
             </div>
@@ -665,10 +682,10 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                     <h2><i class="fas fa-chart-bar"></i> <span data-i18n="results">Results</span></h2>
                     <div class="display-order-switch" style="display: none;" id="displayOrderSwitch">
-                        <button class="order-btn" data-order="denomination-first" title="50 × 30 bundles">
+                        <button type="button" class="order-btn" data-order="denomination-first" title="50 × 30 bundles">
                             <i class="fas fa-money-bill"></i>×<i class="fas fa-layer-group"></i>
                         </button>
-                        <button class="order-btn" data-order="quantity-first" title="30 bundles × 50">
+                        <button type="button" class="order-btn" data-order="quantity-first" title="30 bundles × 50">
                             <i class="fas fa-layer-group"></i>×<i class="fas fa-money-bill"></i>
                         </button>
                     </div>
@@ -681,7 +698,7 @@
                     <div id="initialMessage">
                         <p style="text-align: center; color: var(--text-secondary); padding: 40px;">
                             <i class="fas fa-arrow-left" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                            <span data-i18n="initialMessage">Enter order parameters and click "Optimize"</span>
+                            <span data-i18n="initialMessage">Enter order parameters and click "Calculate"</span>
                         </p>
                     </div>
                 </div>
@@ -716,54 +733,60 @@
         // Internationalization
         const TRANSLATIONS = {
             en: {
-                title: 'Cash Cleaner Optimizer',
-                subtitle: 'Optimize cash packaging into bundles and blocks',
+                title: 'Cash Cleaner Calculator',
+                subtitle: 'Calculate cash packaging into bundles and blocks',
                 orderParams: 'Order Parameters',
                 orderAmount: 'Order Amount',
-                amountTooltip: 'Amount must be divisible by 100',
+                amountTooltip: 'Amount can be any positive value',
                 currency: 'Currency',
                 stockRemaining: 'Bundle Stock',
+                stockRemainingBills: 'Loose Bills Stock',
                 stockTooltip: 'Leave empty for unlimited quantity, enter 0 to exclude denomination. Use ↑/↓ arrows to toggle.',
+                stockTooltipBills: 'Enter number of individual bills available. Leave empty for unlimited quantity.',
                 variantsCount: 'Number of Variants',
-                optimizeBtn: 'Optimize',
+                calculateBtn: 'Calculate',
                 results: 'Results',
-                calculating: 'Calculating optimal variants...',
-                initialMessage: 'Enter order parameters and click "Optimize"',
+                initialMessage: 'Enter order parameters and click "Calculate"',
                 error: 'Error:',
                 idealBlocksFound: 'Ideal blocks found!',
                 idealBlocksDesc: 'Each block contains {blockSize} bundles of {bundleSize} bills each.',
                 idealBlocksNotAvailable: 'Ideal blocks not available.',
                 looseBundlesDesc: 'Showing loose bundle variants.',
+                partialBundlesFound: 'Partial bundles required!',
+                partialBundlesDesc: 'Some packs will be incomplete due to amount constraints.',
                 idealBlocks: '{count} ideal blocks',
                 bundles: '{count} bundles',
                 networkError: 'Network error:',
-                optimizing: 'Optimizing...',
+                calculating: 'Calculating...',
                 bundlesText: 'bundles',
                 viewOnGitHub: 'View on GitHub'
             },
             ru: {
-                title: 'Cash Cleaner Optimizer',
+                title: 'Cash Cleaner Calculator',
                 subtitle: 'Оптимизация упаковки наличных в пачки и блоки',
                 orderParams: 'Параметры заказа',
                 orderAmount: 'Сумма заказа',
-                amountTooltip: 'Сумма должна быть кратна 100',
+                amountTooltip: 'Сумма может быть любой положительной',
                 currency: 'Валюта',
                 stockRemaining: 'Остатки пачек',
+                stockRemainingBills: 'Остатки купюр',
                 stockTooltip: 'Оставьте пустым для неограниченного количества, введите 0 чтобы исключить номинал. Используйте ↑/↓ для переключения.',
+                stockTooltipBills: 'Введите количество отдельных купюр на складе. Оставьте пустым для неограниченного количества.',
                 variantsCount: 'Количество вариантов',
-                optimizeBtn: 'Оптимизировать',
+                calculateBtn: 'Посчитать',
                 results: 'Результаты',
-                calculating: 'Вычисление оптимальных вариантов...',
                 initialMessage: 'Введите параметры заказа и нажмите "Оптимизировать"',
                 error: 'Ошибка:',
                 idealBlocksFound: 'Найдены идеальные блоки!',
                 idealBlocksDesc: 'Каждый блок содержит {blockSize} пачек по {bundleSize} купюр.',
                 idealBlocksNotAvailable: 'Идеальные блоки недоступны.',
                 looseBundlesDesc: 'Показаны варианты с обычными пачками.',
+                partialBundlesFound: 'Требуются неполные пачки!',
+                partialBundlesDesc: 'Некоторые пачки будут неполными из-за ограничений суммы.',
                 idealBlocks: '{count} идеальных блоков',
                 bundles: '{count} пачек',
                 networkError: 'Ошибка сети:',
-                optimizing: 'Вычисление...',
+                calculating: 'Вычисление...',
                 bundlesText: 'пачек',
                 viewOnGitHub: 'Посмотреть на GitHub'
             }
@@ -778,6 +801,7 @@
         // Current settings
         let currentCurrency = 'USD';
         let displayOrder = 'denomination-first'; // 'denomination-first' or 'quantity-first'
+        let stockMode = 'bundles'; // 'bundles' or 'bills'
 
         // Detect browser language
         function detectBrowserLanguage() {
@@ -843,6 +867,7 @@
             const settings = {
                 currency: currentCurrency,
                 displayOrder: displayOrder,
+                stockMode: stockMode,
                 language: currentLang
             };
             localStorage.setItem('cash-cleaner-settings', JSON.stringify(settings));
@@ -856,6 +881,7 @@
                     const settings = JSON.parse(saved);
                     currentCurrency = settings.currency || 'USD';
                     displayOrder = settings.displayOrder || 'denomination-first';
+                    stockMode = settings.stockMode || 'bundles';
                     if (settings.language) {
                         currentLang = settings.language;
                     }
@@ -871,12 +897,15 @@
 
         // Save stock data to localStorage
         function saveStockData() {
-            const stockData = {};
+            const stockData = {
+                mode: stockMode,
+                data: {}
+            };
             document.querySelectorAll('#stockInputs input').forEach(input => {
                 const denom = input.dataset.denom;
                 const value = input.value;
                 if (value !== '') {
-                    stockData[denom] = value;
+                    stockData.data[denom] = value;
                 }
             });
             localStorage.setItem('cash-cleaner-stock', JSON.stringify(stockData));
@@ -888,12 +917,24 @@
                 const saved = localStorage.getItem('cash-cleaner-stock');
                 if (saved) {
                     const stockData = JSON.parse(saved);
+                    let dataToLoad = {};
+                    
+                    // Handle old format (just data object)
+                    if (stockData.mode === undefined) {
+                        dataToLoad = stockData;
+                    } else {
+                        // New format with mode
+                        if (stockData.mode === stockMode) {
+                            dataToLoad = stockData.data || {};
+                        }
+                    }
+                    
                     // Apply to inputs after they're created
                     setTimeout(() => {
-                        Object.keys(stockData).forEach(denom => {
-                            const input = document.querySelector(`#stockInputs input[data-denom="${denom}"]`);
+                        Object.keys(dataToLoad).forEach(denom => {
+                            const input = document.querySelector(`#stockInputs input[data-denom="${denom}"][data-mode="${stockMode}"]`);
                             if (input) {
-                                input.value = stockData[denom];
+                                input.value = dataToLoad[denom];
                             }
                         });
                     }, 100);
@@ -904,7 +945,7 @@
         }
 
         // ====================================================================
-        // CASH CLEANER OPTIMIZER LOGIC (Ported from Python)
+        // CASH CLEANER CALCULATOR LOGIC (Ported from Python)
         // ====================================================================
 
         // Depth-first search for ideal blocks
@@ -993,6 +1034,55 @@
             return solutions;
         }
 
+
+
+        // Enumerate partial bundle configurations (with incomplete packs)
+        function enumeratePartialConfigs(amount, denoms, stock) {
+            const denomsSorted = [...denoms].sort((a, b) => b - a);
+            const cur = new Array(denomsSorted.length).fill(0);
+            const solutions = [];
+            
+            // Add a timeout mechanism to prevent infinite calculations
+            const startTime = Date.now();
+            const maxTime = 5000; // 5 seconds maximum
+            const maxSolutions = 1000; // Maximum number of solutions to find
+            
+            function searchWithTimeout(denoms, i, billsLeft, cur, solutions, stock) {
+                // Check timeout and solution limit
+                if (Date.now() - startTime > maxTime || solutions.length >= maxSolutions) {
+                    return;
+                }
+                
+                if (i === denoms.length - 1) {
+                    const d = denoms[i];
+                    const needed = d ? Math.floor(billsLeft / d) : 0;
+                    if (billsLeft === d * needed && needed <= stock[d] * BUNDLE_SIZE) {
+                        cur[i] = needed;
+                        solutions.push([...cur]);
+                    }
+                    return;
+                }
+
+                const d = denoms[i];
+                // Limit the maximum number of bills to prevent infinite loops
+                const theoreticalMax = Math.ceil(billsLeft / d);
+                const stockMax = stock[d] === INFINITY ? theoreticalMax : stock[d] * BUNDLE_SIZE;
+                const maxForD = Math.min(stockMax, theoreticalMax);
+                
+                for (let bills = 0; bills <= maxForD; bills++) {
+                    if (Date.now() - startTime > maxTime || solutions.length >= maxSolutions) {
+                        break;
+                    }
+                    cur[i] = bills;
+                    searchWithTimeout(denoms, i + 1, billsLeft - d * bills, cur, solutions, stock);
+                }
+                cur[i] = 0;
+            }
+            
+            searchWithTimeout(denomsSorted, 0, amount, cur, solutions, stock);
+            return solutions;
+        }
+
         // Scoring functions
         function scoreIdeal(blocks, bundleCounts, denoms) {
             const kinds = bundleCounts.filter(c => c > 0).length;
@@ -1008,6 +1098,14 @@
             const avg = totalBundles > 0 ? 
                 bundleCounts.reduce((sum, c, i) => sum + denoms[i] * c, 0) / totalBundles : 0;
             return [totalBundles, kinds, -avg];
+        }
+
+        function scorePartial(billCounts, denoms) {
+            const totalBills = billCounts.reduce((sum, c) => sum + c, 0);
+            const kinds = billCounts.filter(c => c > 0).length;
+            const avg = totalBills > 0 ? 
+                billCounts.reduce((sum, c, i) => sum + denoms[i] * c, 0) / totalBills : 0;
+            return [totalBills, kinds, -avg];
         }
 
         // Compare scores
@@ -1061,6 +1159,24 @@
             return raw.slice(0, maxVariants);
         }
 
+        // Find partial bundle variants (with incomplete packs)
+        function findPartialBundleVariants(amount, currencyCode, maxVariants = 5, bundlesStock = null) {
+            const denoms = CURRENCIES[currencyCode.toUpperCase()];
+            if (!denoms) return [];
+            
+            const stock = normalizeStock(denoms, bundlesStock);
+            const raw = enumeratePartialConfigs(amount, denoms, stock);
+            
+            // Sort by score
+            const denomsSorted = [...denoms].sort((a, b) => b - a);
+            raw.sort((a, b) => compareScores(
+                scorePartial(a, denomsSorted),
+                scorePartial(b, denomsSorted)
+            ));
+            
+            return raw.slice(0, maxVariants);
+        }
+
         // ====================================================================
         // UI LOGIC
         // ====================================================================
@@ -1072,14 +1188,27 @@
             
             stockInputs.innerHTML = '';
             
+            // Update title and tooltip based on stock mode
+            const stockTitle = document.getElementById('stockTitle');
+            const stockTooltip = document.getElementById('stockTooltip');
+            
+            if (stockMode === 'bundles') {
+                stockTitle.textContent = t('stockRemaining');
+                stockTooltip.setAttribute('data-tooltip', t('stockTooltip'));
+            } else {
+                stockTitle.textContent = t('stockRemainingBills');
+                stockTooltip.setAttribute('data-tooltip', t('stockTooltipBills'));
+            }
+            
             denoms.forEach(denom => {
                 const color = DENOM_COLORS[denom] || '#64748b';
+                const placeholder = '∞';
                 const stockInput = document.createElement('div');
                 stockInput.className = 'stock-input';
                 stockInput.innerHTML = `
                     <label style="background-color: ${color};">${denom}</label>
                     <div class="stock-input-container">
-                        <input type="number" min="0" placeholder="∞" data-denom="${denom}">
+                        <input type="number" min="0" placeholder="${placeholder}" data-denom="${denom}" data-mode="${stockMode}">
                         <div class="stock-spinner">
                             <button type="button" class="stock-spinner-btn" data-action="up" data-denom="${denom}">▲</button>
                             <button type="button" class="stock-spinner-btn" data-action="down" data-denom="${denom}">▼</button>
@@ -1089,8 +1218,18 @@
                 stockInputs.appendChild(stockInput);
             });
             
+            // Update stock mode buttons
+            updateStockModeButtons();
+            
             // Load saved stock data
             loadStockData();
+        }
+
+        // Update stock mode buttons display
+        function updateStockModeButtons() {
+            document.querySelectorAll('#stockModeSwitch .order-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === stockMode);
+            });
         }
 
         // Update currency buttons display
@@ -1111,7 +1250,7 @@
 
         // Update display order buttons
         function updateDisplayOrderButtons() {
-            document.querySelectorAll('.order-btn').forEach(btn => {
+            document.querySelectorAll('#displayOrderSwitch .order-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.order === displayOrder);
             });
         }
@@ -1158,12 +1297,20 @@
                         ${t('idealBlocksDesc', {blockSize: data.block_size, bundleSize: data.bundle_size})}
                     </div>
                 `;
-            } else {
+            } else if (data.has_loose) {
                 html += `
                     <div class="error">
                         <i class="fas fa-exclamation-triangle"></i>
                         <strong>${t('idealBlocksNotAvailable')}</strong> 
                         ${t('looseBundlesDesc')}
+                    </div>
+                `;
+            } else if (data.has_partial) {
+                html += `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>${t('partialBundlesFound')}</strong> 
+                        ${t('partialBundlesDesc')}
                     </div>
                 `;
             }
@@ -1188,20 +1335,43 @@
                 
                 variant.breakdown.forEach(item => {
                     let denomDisplay = '';
-                    if (displayOrder === 'denomination-first') {
-                        denomDisplay = `
-                            <span class="denom-badge ${getDenomClass(item.denomination)}">
-                                ${item.denomination}
-                            </span>
-                            × ${item.bundles} ${t('bundlesText')}
-                        `;
+                    let typeIcon = '';
+                    
+                    if (item.type === 'partial') {
+                        typeIcon = '<i class="fas fa-asterisk" style="color: orange; margin-right: 4px;" title="Partial pack"></i>';
+                        if (displayOrder === 'denomination-first') {
+                            denomDisplay = `
+                                ${typeIcon}
+                                <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                    ${item.denomination}
+                                </span>
+                                × ${item.bills} bills (partial pack)
+                            `;
+                        } else {
+                            denomDisplay = `
+                                ${typeIcon}${item.bills} bills × 
+                                <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                    ${item.denomination}
+                                </span>
+                                (partial pack)
+                            `;
+                        }
                     } else {
-                        denomDisplay = `
-                            ${item.bundles} ${t('bundlesText')} × 
-                            <span class="denom-badge ${getDenomClass(item.denomination)}">
-                                ${item.denomination}
-                            </span>
-                        `;
+                        if (displayOrder === 'denomination-first') {
+                            denomDisplay = `
+                                <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                    ${item.denomination}
+                                </span>
+                                × ${item.bundles} ${t('bundlesText')}
+                            `;
+                        } else {
+                            denomDisplay = `
+                                ${item.bundles} ${t('bundlesText')} × 
+                                <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                    ${item.denomination}
+                                </span>
+                            `;
+                        }
                     }
                     
                     html += `
@@ -1228,8 +1398,8 @@
             updateDisplayOrderButtons();
         }
 
-        // Optimize function (main logic)
-        function optimize(amount, currency, stock, maxVariants) {
+        // Calculate function (main logic)
+        function calculate(amount, currency, stock, maxVariants) {
             try {
                 // Validate inputs
                 if (amount <= 0) {
@@ -1238,10 +1408,6 @@
                 
                 if (!CURRENCIES[currency]) {
                     throw new Error(`Currency ${currency} not supported`);
-                }
-                
-                if (amount % BUNDLE_SIZE !== 0) {
-                    throw new Error(`Amount must be divisible by ${BUNDLE_SIZE}`);
                 }
                 
                 // Convert stock data
@@ -1256,63 +1422,33 @@
                     });
                 }
                 
-                // Try ideal blocks first
-                const idealVariants = findIdealBlockVariants(
-                    amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
-                );
-                
                 const result = {
                     success: true,
                     amount: amount,
                     currency: currency,
                     bundle_size: BUNDLE_SIZE,
                     block_size: BLOCK_SIZE,
-                    has_ideal: idealVariants.length > 0,
+                    has_ideal: false,
+                    has_loose: false,
+                    has_partial: false,
                     variants: []
                 };
                 
                 const denoms = [...CURRENCIES[currency]].sort((a, b) => b - a);
                 
-                if (idealVariants.length > 0) {
-                    // Format ideal variants
-                    idealVariants.forEach(([blocks, bundleCounts]) => {
-                        const variant = {
-                            type: 'ideal',
-                            blocks: blocks,
-                            total_bundles: blocks * BLOCK_SIZE,
-                            breakdown: []
-                        };
-                        
-                        let totalValue = 0;
-                        bundleCounts.forEach((count, i) => {
-                            if (count > 0) {
-                                const denom = denoms[i];
-                                const value = denom * count * BUNDLE_SIZE;
-                                totalValue += value;
-                                variant.breakdown.push({
-                                    denomination: denom,
-                                    bundles: count,
-                                    value: value
-                                });
-                            }
-                        });
-                        
-                        variant.total_value = totalValue;
-                        result.variants.push(variant);
-                    });
-                } else {
-                    // Try loose bundles fallback
-                    const looseVariants = findLooseBundleVariants(
+                // Try ideal blocks first (only if amount is divisible by bundle size)
+                if (amount % BUNDLE_SIZE === 0) {
+                    const idealVariants = findIdealBlockVariants(
                         amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
                     );
                     
-                    if (looseVariants.length > 0) {
-                        result.has_ideal = false;
-                        looseVariants.forEach(bundleCounts => {
+                    if (idealVariants.length > 0) {
+                        result.has_ideal = true;
+                        idealVariants.forEach(([blocks, bundleCounts]) => {
                             const variant = {
-                                type: 'loose',
-                                blocks: 0,
-                                total_bundles: bundleCounts.reduce((sum, c) => sum + c, 0),
+                                type: 'ideal',
+                                blocks: blocks,
+                                total_bundles: blocks * BLOCK_SIZE,
                                 breakdown: []
                             };
                             
@@ -1325,12 +1461,106 @@
                                     variant.breakdown.push({
                                         denomination: denom,
                                         bundles: count,
-                                        value: value
+                                        value: value,
+                                        bills: count * BUNDLE_SIZE
                                     });
                                 }
                             });
                             
                             variant.total_value = totalValue;
+                            result.variants.push(variant);
+                        });
+                    } else {
+                        // Try loose bundles fallback
+                        const looseVariants = findLooseBundleVariants(
+                            amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
+                        );
+                        
+                        if (looseVariants.length > 0) {
+                            result.has_loose = true;
+                            looseVariants.forEach(bundleCounts => {
+                                const variant = {
+                                    type: 'loose',
+                                    blocks: 0,
+                                    total_bundles: bundleCounts.reduce((sum, c) => sum + c, 0),
+                                    breakdown: []
+                                };
+                                
+                                let totalValue = 0;
+                                bundleCounts.forEach((count, i) => {
+                                    if (count > 0) {
+                                        const denom = denoms[i];
+                                        const value = denom * count * BUNDLE_SIZE;
+                                        totalValue += value;
+                                        variant.breakdown.push({
+                                            denomination: denom,
+                                            bundles: count,
+                                            value: value,
+                                            bills: count * BUNDLE_SIZE
+                                        });
+                                    }
+                                });
+                                
+                                variant.total_value = totalValue;
+                                result.variants.push(variant);
+                            });
+                        }
+                    }
+                }
+                
+                // If no ideal or loose variants found, try partial bundles
+                if (result.variants.length === 0) {
+                    const partialVariants = findPartialBundleVariants(
+                        amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
+                    );
+                    
+                    if (partialVariants.length > 0) {
+                        result.has_partial = true;
+                        partialVariants.forEach(billCounts => {
+                            const variant = {
+                                type: 'partial',
+                                blocks: 0,
+                                total_bundles: 0,
+                                breakdown: []
+                            };
+                            
+                            let totalValue = 0;
+                            let totalBundles = 0;
+                            
+                            billCounts.forEach((count, i) => {
+                                if (count > 0) {
+                                    const denom = denoms[i];
+                                    const value = denom * count;
+                                    totalValue += value;
+                                    
+                                    const fullBundles = Math.floor(count / BUNDLE_SIZE);
+                                    const partialBills = count % BUNDLE_SIZE;
+                                    
+                                    if (fullBundles > 0) {
+                                        variant.breakdown.push({
+                                            denomination: denom,
+                                            bundles: fullBundles,
+                                            value: denom * fullBundles * BUNDLE_SIZE,
+                                            bills: fullBundles * BUNDLE_SIZE,
+                                            type: 'full'
+                                        });
+                                        totalBundles += fullBundles;
+                                    }
+                                    
+                                    if (partialBills > 0) {
+                                        variant.breakdown.push({
+                                            denomination: denom,
+                                            bundles: 0,
+                                            value: denom * partialBills,
+                                            bills: partialBills,
+                                            type: 'partial'
+                                        });
+                                    }
+                                }
+                            });
+                            
+                            variant.total_value = totalValue;
+                            variant.total_bundles = totalBundles;
                             result.variants.push(variant);
                         });
                     } else {
@@ -1346,7 +1576,7 @@
         }
 
         // Form submission handler
-        document.getElementById('optimizerForm').addEventListener('submit', async (e) => {
+        document.getElementById('calculatorForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const amount = parseInt(document.getElementById('amount').value);
@@ -1358,7 +1588,14 @@
                 const denom = input.dataset.denom;
                 const value = input.value;
                 if (value !== '') {
-                    stock[denom] = value;
+                    // Convert bills to bundles if in bills mode
+                    if (stockMode === 'bills') {
+                        // Convert individual bills to equivalent bundles (with fractional support)
+                        stock[denom] = Math.floor(parseInt(value) / BUNDLE_SIZE);
+                    } else {
+                        // Already in bundles
+                        stock[denom] = value;
+                    }
                 }
             });
             
@@ -1370,7 +1607,7 @@
             
             // Show loading
             const resultsDiv = document.getElementById('results');
-            const optimizeBtn = document.getElementById('optimizeBtn');
+            const calculateBtn = document.getElementById('calculateBtn');
             
             resultsDiv.innerHTML = `
                 <div class="loading" style="display: block;">
@@ -1379,19 +1616,19 @@
                 </div>
             `;
             
-            optimizeBtn.disabled = true;
-            optimizeBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('optimizing')}`;
+            calculateBtn.disabled = true;
+            calculateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('calculating')}`;
             
             // Simulate async processing
             setTimeout(() => {
                 try {
-                    const data = optimize(amount, currentCurrency, stock, maxVariants);
+                    const data = calculate(amount, currentCurrency, stock, maxVariants);
                     displayResults(data);
                 } catch (error) {
                     displayResults({error: error.message});
                 } finally {
-                    optimizeBtn.disabled = false;
-                    optimizeBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('optimizeBtn')}`;
+                    calculateBtn.disabled = false;
+                    calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
                 }
             }, 100);
         });
@@ -1402,7 +1639,7 @@
                 const lang = btn.dataset.lang;
                 applyLanguage(lang);
                 saveSettings();
-                // Re-render stock inputs with new language
+                // Re-render stock inputs with new language but preserve stock mode
                 updateStockInputs();
             });
         });
@@ -1418,9 +1655,11 @@
             });
         });
 
-        // Display order buttons event handlers
-        document.querySelectorAll('.order-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+        // Button event handlers using event delegation
+        document.addEventListener('click', (e) => {
+            // Display order buttons
+            if (e.target.closest('#displayOrderSwitch .order-btn')) {
+                const btn = e.target.closest('#displayOrderSwitch .order-btn');
                 displayOrder = btn.dataset.order;
                 updateDisplayOrderButtons();
                 saveSettings();
@@ -1428,7 +1667,14 @@
                 if (lastResults) {
                     displayResults(lastResults);
                 }
-            });
+            }
+            // Stock mode buttons
+            else if (e.target.closest('#stockModeSwitch .order-btn')) {
+                const btn = e.target.closest('#stockModeSwitch .order-btn');
+                stockMode = btn.dataset.mode;
+                updateStockInputs();
+                saveSettings();
+            }
         });
 
 
@@ -1591,6 +1837,7 @@
         updateCurrencyButtons();
         updateCurrencyBackground();
         updateDisplayOrderButtons();
+        updateStockModeButtons(); 
         updateStockInputs();
     </script>
 </body>
