@@ -140,6 +140,26 @@
             background: white;
         }
 
+        .amount-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .amount-input-container input {
+            padding-left: 40px;
+        }
+
+        .currency-indicator {
+            position: absolute;
+            left: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            pointer-events: none;
+            z-index: 1;
+        }
+
         .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: var(--primary-color);
@@ -148,7 +168,7 @@
 
         .stock-section {
             background: var(--secondary-color);
-            padding: 20px;
+            padding: 10px;
             border-radius: 12px;
             margin-bottom: 20px;
         }
@@ -156,14 +176,206 @@
         .stock-section h3 {
             font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 15px;
+            /* margin-bottom: 15px; */
+            padding-left: 10px;
             color: var(--text-primary);
         }
 
-        .stock-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
+        .stock-multi-currency {
+            background: white;
+            border-radius: 8px;
+            /* border: 1px solid var(--border-color); */
+            overflow: hidden;
+        }
+
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stock-table th,
+        .stock-table td {
+            padding: 8px 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stock-table th {
+            background: var(--secondary-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .stock-table th:first-child {
+            text-align: left;
+            padding-left: 16px;
+        }
+
+        .denom-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            min-width: 60px;
+            justify-content: center;
+        }
+
+        .stock-table .stock-cell {
+            position: relative;
+            padding: 4px;
+        }
+
+        .stock-table .stock-cell input {
+            width: 100%;
+            padding: 6px 24px 6px 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            background: white;
+            -moz-appearance: textfield;
+        }
+
+        .stock-table .stock-cell input::-webkit-outer-spin-button,
+        .stock-table .stock-cell input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .stock-table .stock-cell input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .stock-table .stock-cell input:disabled {
+            background: #f8f9fa;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        .stock-table .stock-cell-spinner {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .stock-table .stock-cell-spinner-btn {
+            width: 16px;
+            height: 12px;
+            border: none;
+            background: var(--border-color);
+            color: var(--text-secondary);
+            font-size: 8px;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stock-table .stock-cell-spinner-btn:first-child {
+            border-radius: 3px 3px 0 0;
+        }
+
+        .stock-table .stock-cell-spinner-btn:last-child {
+            border-radius: 0 0 3px 3px;
+        }
+
+        .stock-table .stock-cell-spinner-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .stock-table .stock-cell-spinner-btn:active {
+            transform: scale(0.9);
+        }
+
+        .stock-table .empty-cell {
+            background: #f8f9fa;
+            color: #adb5bd;
+            font-size: 0.8rem;
+        }
+
+        .stock-table .enabled-cell {
+            text-align: center;
+            padding: 8px;
+        }
+
+        .enabled-checkbox {
+            position: relative;
+            display: inline-block;
+        }
+
+        .enabled-checkbox input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .enabled-checkbox .checkbox-label {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .enabled-checkbox .checkbox-label i {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .enabled-checkbox input[type="checkbox"]:checked + .checkbox-label {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .enabled-checkbox input[type="checkbox"]:checked + .checkbox-label i {
+            opacity: 1;
+        }
+
+        .enabled-checkbox input[type="checkbox"]:not(:checked) + .checkbox-label {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .enabled-checkbox input[type="checkbox"]:not(:checked) + .checkbox-label::after {
+            content: '×';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .enabled-checkbox:hover .checkbox-label {
+            transform: scale(1.1);
         }
 
         .stock-input {
@@ -247,6 +459,151 @@
 
         .stock-spinner-btn:active {
             transform: scale(0.95);
+        }
+
+        /* New vertical tables styles */
+        .stock-tables-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px;
+            margin: 10px; 
+        }
+
+        .stock-table-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: stretch;
+        }
+
+        .currency-header {
+            background: var(--secondary-color);
+            padding: 8px 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            border-right: 1px solid var(--border-color);
+            writing-mode: sideways-lr;
+            text-orientation: sideways;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 35px;
+            white-space: nowrap;
+        }
+
+        .table-container {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .stock-table-single {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stock-table-single th,
+        .stock-table-single td {
+            padding: 6px 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stock-table-single tr:last-child td {
+            border-bottom: none;
+        }
+
+        .stock-table-single th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .stock-table-single .stock-cell {
+            position: relative;
+            padding: 4px;
+        }
+
+        .stock-table-single .stock-cell input {
+            width: 100%;
+            padding: 8px 24px 8px 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+            -moz-appearance: textfield;
+            min-width: 80px;
+        }
+
+        .stock-table-single .stock-cell input::-webkit-outer-spin-button,
+        .stock-table-single .stock-cell input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .stock-table-single .stock-cell input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .stock-table-single .stock-cell input:disabled {
+            background: #f8f9fa;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        .stock-table-single .stock-cell-spinner {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .stock-table-single .stock-cell-spinner-btn {
+            width: 16px;
+            height: 12px;
+            border: none;
+            background: var(--border-color);
+            color: var(--text-secondary);
+            font-size: 8px;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stock-table-single .stock-cell-spinner-btn:first-child {
+            border-radius: 3px 3px 0 0;
+        }
+
+        .stock-table-single .stock-cell-spinner-btn:last-child {
+            border-radius: 0 0 3px 3px;
+        }
+
+        .stock-table-single .stock-cell-spinner-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .stock-table-single .stock-cell-spinner-btn:active {
+            transform: scale(0.9);
+        }
+
+        @media (max-width: 768px) {
+            .stock-tables-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
         }
 
         .btn {
@@ -421,6 +778,186 @@
         .lang-separator {
             color: rgba(255, 255, 255, 0.6);
             font-weight: 300;
+        }
+
+        /* Custom Dialog Modal */
+        .custom-dialog-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+        }
+
+        .custom-dialog-modal.show {
+            display: flex;
+        }
+
+        .custom-dialog-content {
+            background: white;
+            border-radius: 16px;
+            min-width: 400px;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: dialogAppear 0.3s ease-out;
+        }
+
+        @keyframes dialogAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .custom-dialog-header {
+            padding: 24px 24px 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .custom-dialog-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .custom-dialog-body {
+            padding: 20px 24px;
+        }
+
+        .custom-dialog-body p {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .stock-changes {
+            margin-top: 16px;
+            background: var(--secondary-color);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stock-changes-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .stock-change-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stock-change-item:last-child {
+            border-bottom: none;
+        }
+
+        .stock-change-denom {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stock-change-denom-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .stock-change-values {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .stock-change-before {
+            color: var(--text-secondary);
+        }
+
+        .stock-change-arrow {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .stock-change-after {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .stock-change-deduction {
+            color: var(--danger-color);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .custom-dialog-footer {
+            padding: 16px 24px 24px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .dialog-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .dialog-btn-secondary {
+            background: var(--secondary-color);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .dialog-btn-secondary:hover {
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        .dialog-btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .dialog-btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .dialog-btn-primary.danger {
+            background: var(--danger-color);
+        }
+
+        .dialog-btn-primary.danger:hover {
+            background: #dc2626;
         }
 
         /* Block Visualization Modal */
@@ -630,6 +1167,26 @@
             color: white;
         }
 
+        .execute-order-btn {
+            background: var(--accent-color) !important;
+            color: white !important;
+            border-color: var(--accent-color) !important;
+            font-weight: 600;
+        }
+
+        .execute-order-btn:hover {
+            background: #059669 !important;
+            border-color: #059669 !important;
+            transform: translateY(-1px);
+        }
+
+        .execute-order-btn:disabled {
+            background: #94a3b8 !important;
+            border-color: #94a3b8 !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         /* Responsive design */
         @media (max-width: 768px) {
             .main-content {
@@ -645,8 +1202,9 @@
                 padding: 20px;
             }
             
-            .stock-inputs {
-                grid-template-columns: repeat(2, 1fr);
+            .stock-table .stock-cell input {
+                width: 60px;
+                font-size: 0.8rem;
             }
         }
 
@@ -659,8 +1217,36 @@
                 font-size: 1.5rem;
             }
             
-            .stock-inputs {
-                grid-template-columns: 1fr;
+            .stock-table .stock-cell input {
+                width: 50px;
+                font-size: 0.75rem;
+            }
+            
+            .stock-table th,
+            .stock-table td {
+                padding: 6px 8px;
+            }
+            
+            .custom-dialog-content {
+                min-width: 300px;
+                margin: 20px;
+            }
+            
+            .custom-dialog-header {
+                padding: 20px 20px 12px 20px;
+            }
+            
+            .custom-dialog-body {
+                padding: 16px 20px;
+            }
+            
+            .custom-dialog-footer {
+                padding: 12px 20px 20px 20px;
+                flex-direction: column;
+            }
+            
+            .dialog-btn {
+                width: 100%;
             }
         }
 
@@ -713,6 +1299,7 @@
             transform: translateY(-1px);
             color: white;
         }
+
 
         /* Currency buttons */
         .currency-buttons {
@@ -830,35 +1417,27 @@
                                 <i class="fas fa-info-circle"></i>
                             </span>
                         </label>
-                        <input type="number" id="amount" step="1" min="1" placeholder="85000" required>
+                        <div class="amount-input-container">
+                            <div class="currency-indicator" id="currencyIndicator">$</div>
+                            <input type="number" id="amount" step="1" min="1" placeholder="85000" required>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label data-i18n="currency">Currency</label>
                         <div class="currency-buttons" id="currencyButtons">
-                            <button type="button" class="currency-btn" data-currency="USD">
-                                <span class="currency-flag">🇺🇸</span>
-                                <span class="currency-code">USD</span>
-                            </button>
-                            <button type="button" class="currency-btn" data-currency="EUR">
-                                <span class="currency-flag">🇪🇺</span>
-                                <span class="currency-code">EUR</span>
-                            </button>
-                            <button type="button" class="currency-btn" data-currency="JPY">
-                                <span class="currency-flag">🇯🇵</span>
-                                <span class="currency-code">JPY</span>
-                            </button>
+                            <!-- Currency buttons will be populated by JavaScript -->
                         </div>
                     </div>
 
                     <div class="stock-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h3>
+                        <h3>
                                 <span id="stockTitle" data-i18n="stockRemaining">Bundle Stock</span>
                                 <span class="info-tooltip" id="stockTooltip" data-tooltip-i18n="stockTooltip" data-tooltip="Leave empty for unlimited quantity">
-                                    <i class="fas fa-info-circle"></i>
-                                </span>
-                            </h3>
+                                <i class="fas fa-info-circle"></i>
+                            </span>
+                        </h3>
                             <div class="display-order-switch" id="stockModeSwitch">
                                 <button type="button" class="order-btn active" data-mode="bundles" title="Bundle Stock">
                                     <i class="fas fa-layer-group"></i>
@@ -868,8 +1447,8 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="stock-inputs" id="stockInputs">
-                            <!-- Stock inputs will be populated by JavaScript -->
+                        <div class="stock-multi-currency" id="stockMultiCurrency">
+                            <!-- Multi-currency stock table will be populated by JavaScript -->
                         </div>
                     </div>
 
@@ -913,6 +1492,22 @@
         </div>
     </div>
 
+    <!-- Custom Dialog Modal -->
+    <div class="custom-dialog-modal" id="customDialog">
+        <div class="custom-dialog-content">
+            <div class="custom-dialog-header">
+                <h3 id="dialogTitle"></h3>
+            </div>
+            <div class="custom-dialog-body">
+                <p id="dialogMessage"></p>
+            </div>
+            <div class="custom-dialog-footer">
+                <button class="dialog-btn dialog-btn-secondary" id="dialogCancelBtn" data-i18n="cancel">Cancel</button>
+                <button class="dialog-btn dialog-btn-primary" id="dialogConfirmBtn" data-i18n="confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Block Visualization Modal -->
     <div class="block-modal" id="blockModal">
         <div class="block-modal-content">
@@ -922,7 +1517,8 @@
                 <div class="block-3d" id="block3d">
                     <!-- Will be populated by JavaScript -->
                 </div>
-                <div style="text-align: center;">
+                <div style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+                    <button class="viz-btn execute-order-btn" id="executeOrderBtn" data-i18n="executeOrder">Execute Order</button>
                     <button class="viz-btn" onclick="document.getElementById('blockModal').classList.remove('show')" data-i18n="closeDialog">Close</button>
                 </div>
             </div>
@@ -940,6 +1536,13 @@
             'USD': [100, 50, 20, 10],
             'EUR': [100, 50, 20],
             'JPY': [10000, 5000, 1000]
+        };
+
+        // Currency symbols
+        const CURRENCY_SYMBOLS = {
+            'USD': '$',
+            'EUR': '€',
+            'JPY': '¥'
         };
 
         // Denomination colors
@@ -961,11 +1564,12 @@
                 orderParams: 'Order Parameters',
                 orderAmount: 'Order Amount',
                 amountTooltip: 'Amount can be any positive value',
-                currency: 'Currency',
+                currency: 'Order Currency',
                 stockRemaining: 'Bundle Stock',
                 stockRemainingBills: 'Loose Bills Stock',
                 stockTooltip: 'Leave empty for unlimited quantity, enter 0 to exclude denomination. Use ↑/↓ arrows to toggle.',
                 stockTooltipBills: 'Enter number of individual bills available. Leave empty for unlimited quantity.',
+                denominationValue: 'Value',
                 variantsCount: 'Number of Variants',
                 calculateBtn: 'Calculate',
                 results: 'Results',
@@ -978,12 +1582,26 @@
                 partialBundlesFound: 'Partial bundles required!',
                 partialBundlesDesc: 'Some packs will be incomplete due to amount constraints.',
                 idealBlocks: '{count} ideal blocks',
-                bundles: '{count} bundles',
+                partialBlocks: '{count} blocks',
+                bundles: 'Bundles',
+                bills: 'Bills',
                 networkError: 'Network error:',
                 calculating: 'Calculating...',
                 bundlesText: 'bundles',
                 viewOnGitHub: 'View on GitHub',
                 blockVisualization: 'Block Visualization',
+                executeOrder: 'Execute Order',
+                orderExecuted: 'Order executed successfully!',
+                orderExecutionConfirm: 'Execute this order and deduct from stock?',
+                insufficientStock: 'Insufficient stock for this order',
+                confirmExecution: 'Confirm Execution',
+                executionSuccess: 'Success',
+                executionError: 'Error',
+                cancel: 'Cancel',
+                confirm: 'Confirm',
+                ok: 'OK',
+                stockChanges: 'Stock Changes',
+                deducted: 'deducted',
                 closeDialog: 'Close',
             },
             ru: {
@@ -992,11 +1610,12 @@
                 orderParams: 'Параметры заказа',
                 orderAmount: 'Сумма заказа',
                 amountTooltip: 'Сумма может быть любой положительной',
-                currency: 'Валюта',
+                currency: 'Валюта заказа',
                 stockRemaining: 'Остатки пачек',
                 stockRemainingBills: 'Остатки купюр',
                 stockTooltip: 'Оставьте пустым для неограниченного количества, введите 0 чтобы исключить номинал. Используйте ↑/↓ для переключения.',
                 stockTooltipBills: 'Введите количество отдельных купюр на складе. Оставьте пустым для неограниченного количества.',
+                denominationValue: 'Номинал',
                 variantsCount: 'Количество вариантов',
                 calculateBtn: 'Посчитать',
                 results: 'Результаты',
@@ -1009,12 +1628,26 @@
                 partialBundlesFound: 'Требуются неполные пачки!',
                 partialBundlesDesc: 'Некоторые пачки будут неполными из-за ограничений суммы.',
                 idealBlocks: '{count} идеальных блоков',
-                bundles: '{count} пачек',
+                partialBlocks: '{count} блоков',
+                bundles: 'Пачки',
+                bills: 'Купюры',
                 networkError: 'Ошибка сети:',
                 calculating: 'Вычисление...',
                 bundlesText: 'пачек',
                 viewOnGitHub: 'Посмотреть на GitHub',
                 blockVisualization: 'Визуализация блока',
+                executeOrder: 'Выполнить заказ',
+                orderExecuted: 'Заказ успешно выполнен!',
+                orderExecutionConfirm: 'Выполнить этот заказ и списать со склада?',
+                insufficientStock: 'Недостаточно остатков для этого заказа',
+                confirmExecution: 'Подтверждение выполнения',
+                executionSuccess: 'Успешно',
+                executionError: 'Ошибка',
+                cancel: 'Отмена',
+                confirm: 'Подтвердить',
+                ok: 'ОК',
+                stockChanges: 'Изменения остатков',
+                deducted: 'списано',
                 closeDialog: 'Закрыть',
             }
         };
@@ -1028,7 +1661,7 @@
         // Current settings
         let currentCurrency = 'USD';
         let displayOrder = 'denomination-first'; // 'denomination-first' or 'quantity-first'
-        let stockMode = 'bundles'; // 'bundles' or 'bills'
+        let stockMode = 'bills'; // 'bundles' or 'bills'
 
         // Detect browser language
         function detectBrowserLanguage() {
@@ -1108,7 +1741,7 @@
                     const settings = JSON.parse(saved);
                     currentCurrency = settings.currency || 'USD';
                     displayOrder = settings.displayOrder || 'denomination-first';
-                    stockMode = settings.stockMode || 'bundles';
+                    stockMode = settings.stockMode || 'bills';
                     if (settings.language) {
                         currentLang = settings.language;
                     }
@@ -1122,20 +1755,84 @@
             }
         }
 
+        // Helper function to get currency from checkbox element
+        function getCurrencyFromCheckbox(checkbox) {
+            try {
+                const tableWrapper = checkbox.closest('.stock-table-wrapper');
+                if (!tableWrapper) {
+                    console.warn('No table wrapper found for checkbox', checkbox);
+                    return 'USD';
+                }
+                
+                const currencyHeader = tableWrapper.querySelector('.currency-header');
+                if (!currencyHeader) {
+                    console.warn('No currency header found in table wrapper', tableWrapper);
+                    return 'USD';
+                }
+                
+                const currencyText = currencyHeader.textContent;
+                
+                if (currencyText.includes('EUR')) return 'EUR';
+                if (currencyText.includes('JPY')) return 'JPY';
+                return 'USD'; // default
+            } catch (e) {
+                console.error('Error in getCurrencyFromCheckbox:', e);
+                return 'USD';
+            }
+        }
+
         // Save stock data to localStorage
         function saveStockData() {
-            const stockData = {
-                mode: stockMode,
-                data: {}
-            };
-            document.querySelectorAll('#stockInputs input').forEach(input => {
+            try {
+                // Get existing data or create new structure
+                let allStockData = {};
+                try {
+                    const existing = localStorage.getItem('cash-cleaner-stock');
+                    if (existing) {
+                        allStockData = JSON.parse(existing);
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse existing stock data:', e);
+                }
+                
+                // Ensure we have the proper structure
+                if (!allStockData.bundles) allStockData.bundles = { data: {}, enabled: {} };
+                if (!allStockData.bills) allStockData.bills = { data: {}, enabled: {} };
+                
+                const currentModeData = allStockData[stockMode];
+                
+                // Save stock quantities for current mode
+                currentModeData.data = {};
+                document.querySelectorAll('#stockMultiCurrency input[type="number"]').forEach(input => {
                 const denom = input.dataset.denom;
+                    const currency = input.dataset.currency;
                 const value = input.value;
                 if (value !== '') {
-                    stockData.data[denom] = value;
-                }
-            });
-            localStorage.setItem('cash-cleaner-stock', JSON.stringify(stockData));
+                        const key = `${currency}_${denom}`;
+                        currentModeData.data[key] = value;
+                    }
+                });
+                
+                // Save enabled states per currency
+                currentModeData.enabled = {};
+                document.querySelectorAll('#stockMultiCurrency input[type="checkbox"]').forEach(input => {
+                    const denom = input.dataset.denom;
+                    // Find which currency this checkbox belongs to
+                    const currency = getCurrencyFromCheckbox(input);
+                    const key = `${currency}_${denom}`;
+                    currentModeData.enabled[key] = input.checked;
+                });
+                
+                // Also update the other mode's enabled states to keep them in sync
+                const otherMode = stockMode === 'bundles' ? 'bills' : 'bundles';
+                Object.keys(currentModeData.enabled).forEach(key => {
+                    allStockData[otherMode].enabled[key] = currentModeData.enabled[key];
+                });
+                
+                localStorage.setItem('cash-cleaner-stock', JSON.stringify(allStockData));
+            } catch (e) {
+                console.error('Failed to save stock data:', e);
+            }
         }
 
         // Load stock data from localStorage
@@ -1143,25 +1840,128 @@
             try {
                 const saved = localStorage.getItem('cash-cleaner-stock');
                 if (saved) {
-                    const stockData = JSON.parse(saved);
+                    const allStockData = JSON.parse(saved);
                     let dataToLoad = {};
+                    let enabledStates = {};
                     
-                    // Handle old format (just data object)
-                    if (stockData.mode === undefined) {
-                        dataToLoad = stockData;
-                    } else {
-                        // New format with mode
-                        if (stockData.mode === stockMode) {
-                            dataToLoad = stockData.data || {};
+                    // Handle different data formats
+                    if (allStockData.bundles && allStockData.bills) {
+                        // New format with separate modes
+                        const currentModeData = allStockData[stockMode];
+                        if (currentModeData) {
+                            dataToLoad = currentModeData.data || {};
+                            enabledStates = currentModeData.enabled || {};
                         }
+                    } else if (allStockData.mode !== undefined) {
+                        // Old format with single mode
+                        if (allStockData.mode === stockMode) {
+                            dataToLoad = allStockData.data || {};
+                            enabledStates = allStockData.enabled || {};
+                        }
+                    } else {
+                        // Legacy format - try to map old data
+                        Object.keys(allStockData).forEach(key => {
+                            if (key.includes('_')) {
+                                // Already has currency prefix
+                                dataToLoad[key] = allStockData[key];
+                            } else {
+                                // No currency prefix - assume it's for current currency
+                                dataToLoad[`${currentCurrency}_${key}`] = allStockData[key];
+                            }
+                        });
                     }
                     
                     // Apply to inputs after they're created
                     setTimeout(() => {
-                        Object.keys(dataToLoad).forEach(denom => {
-                            const input = document.querySelector(`#stockInputs input[data-denom="${denom}"][data-mode="${stockMode}"]`);
+                        // Load stock quantities
+                        Object.keys(dataToLoad).forEach(key => {
+                            let input;
+                            if (key.includes('_')) {
+                                // Format: currency_denomination
+                                const [currency, denom] = key.split('_');
+                                input = document.querySelector(`#stockMultiCurrency input[type="number"][data-denom="${denom}"][data-currency="${currency}"]`);
+                            } else {
+                                // Legacy format: just denomination
+                                input = document.querySelector(`#stockMultiCurrency input[type="number"][data-denom="${key}"][data-currency="${currentCurrency}"]`);
+                            }
                             if (input) {
-                                input.value = dataToLoad[denom];
+                                input.value = dataToLoad[key];
+                            }
+                        });
+                        
+                        // Load enabled states
+                        Object.keys(enabledStates).forEach(key => {
+                            if (key.includes('_')) {
+                                // New format: currency_denomination
+                                const [currency, denom] = key.split('_');
+                                const checkboxes = document.querySelectorAll(`#stockMultiCurrency input[type="checkbox"][data-denom="${denom}"]`);
+                                checkboxes.forEach(checkbox => {
+                                    // Verify this checkbox belongs to the correct currency
+                                    const checkboxCurrency = getCurrencyFromCheckbox(checkbox);
+                                    
+                                    if (checkboxCurrency === currency) {
+                                        checkbox.checked = enabledStates[key];
+                                        // Apply visual state
+                                        const row = checkbox.closest('tr');
+                                        if (row) {
+                                            if (enabledStates[key]) {
+                                                row.style.opacity = '1';
+                                                row.querySelectorAll('input[type="number"]').forEach(input => {
+                                                    input.disabled = false;
+                                                });
+                                            } else {
+                                                row.style.opacity = '0.5';
+                                                row.querySelectorAll('input[type="number"]').forEach(input => {
+                                                    input.disabled = true;
+                                                });
+                                            }
+                                        }
+                                    }
+                                });
+                            } else {
+                                // Legacy format: just denomination - apply to all currencies
+                                const denom = key;
+                                const checkboxes = document.querySelectorAll(`#stockMultiCurrency input[type="checkbox"][data-denom="${denom}"]`);
+                                checkboxes.forEach(checkbox => {
+                                    if (checkbox) {
+                                        checkbox.checked = enabledStates[key];
+                                        // Apply visual state
+                                        const row = checkbox.closest('tr');
+                                        if (row) {
+                                            if (enabledStates[key]) {
+                                                row.style.opacity = '1';
+                                                row.querySelectorAll('input[type="number"]').forEach(input => {
+                                                    input.disabled = false;
+                                                });
+                                            } else {
+                                                row.style.opacity = '0.5';
+                                                row.querySelectorAll('input[type="number"]').forEach(input => {
+                                                    input.disabled = true;
+                                                });
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                        
+                        // Set default values for checkboxes that weren't found in saved data
+                        document.querySelectorAll('#stockMultiCurrency input[type="checkbox"]').forEach(checkbox => {
+                            const denom = checkbox.dataset.denom;
+                            const currency = getCurrencyFromCheckbox(checkbox);
+                            const key = `${currency}_${denom}`;
+                            
+                            // If this checkbox state wasn't loaded from saved data, set it to default (enabled)
+                            if (!(key in enabledStates)) {
+                                checkbox.checked = true;
+                                // Apply visual state
+                                const row = checkbox.closest('tr');
+                                if (row) {
+                                    row.style.opacity = '1';
+                                    row.querySelectorAll('input[type="number"]').forEach(input => {
+                                        input.disabled = false;
+                                    });
+                                }
                             }
                         });
                     }, 100);
@@ -1410,10 +2210,7 @@
 
         // Update stock inputs when currency changes
         function updateStockInputs() {
-            const stockInputs = document.getElementById('stockInputs');
-            const denoms = CURRENCIES[currentCurrency];
-            
-            stockInputs.innerHTML = '';
+            const stockMultiCurrency = document.getElementById('stockMultiCurrency');
             
             // Update title and tooltip based on stock mode
             const stockTitle = document.getElementById('stockTitle');
@@ -1427,29 +2224,113 @@
                 stockTooltip.setAttribute('data-tooltip', t('stockTooltipBills'));
             }
             
-            denoms.forEach(denom => {
-                const color = DENOM_COLORS[denom] || '#64748b';
-                const placeholder = '∞';
-                const stockInput = document.createElement('div');
-                stockInput.className = 'stock-input';
-                stockInput.innerHTML = `
-                    <label style="background-color: ${color};">${denom}</label>
-                    <div class="stock-input-container">
-                        <input type="number" min="0" placeholder="${placeholder}" data-denom="${denom}" data-mode="${stockMode}">
-                        <div class="stock-spinner">
-                            <button type="button" class="stock-spinner-btn" data-action="up" data-denom="${denom}">▲</button>
-                            <button type="button" class="stock-spinner-btn" data-action="down" data-denom="${denom}">▼</button>
-                        </div>
-                    </div>
-                `;
-                stockInputs.appendChild(stockInput);
-            });
+            // Create multi-currency table
+            createMultiCurrencyTable();
             
             // Update stock mode buttons
             updateStockModeButtons();
             
-            // Load saved stock data
+            // Load saved stock data for current mode
             loadStockData();
+        }
+
+        // Create multi-currency stock table
+        function createMultiCurrencyTable() {
+            const stockMultiCurrency = document.getElementById('stockMultiCurrency');
+            
+            // Create container for three separate tables
+            const tablesContainer = document.createElement('div');
+            tablesContainer.className = 'stock-tables-container';
+            
+            // Create tables for each currency
+            ['USD', 'EUR', 'JPY'].forEach(currency => {
+                const tableWrapper = document.createElement('div');
+                tableWrapper.className = 'stock-table-wrapper';
+                
+                // Currency header
+                const currencyHeader = document.createElement('div');
+                currencyHeader.className = 'currency-header';
+                const flag = currency === 'USD' ? '🇺🇸' : currency === 'EUR' ? '🇪🇺' : '🇯🇵';
+                currencyHeader.innerHTML = `${flag} ${CURRENCY_SYMBOLS[currency]} ${currency}`;
+                
+                // Create table container
+                const tableContainer = document.createElement('div');
+                tableContainer.className = 'table-container';
+                
+                // Create table
+                const table = document.createElement('table');
+                table.className = 'stock-table-single';
+                
+                // Create header
+                // const headerRow = document.createElement('tr');
+                // headerRow.innerHTML = `
+                //     <th style="width: 40px;"></th>
+                //     <th style="width: 120px;">${t('denominationValue')}</th>
+                //     <th>${stockMode === 'bundles' ? t('bundles') : t('bills')}</th>
+                // `;
+                // table.appendChild(headerRow);
+                
+                // Get denominations for this currency and sort them
+                const denominations = CURRENCIES[currency].sort((a, b) => b - a);
+                
+                // Create rows for each denomination
+                denominations.forEach(denom => {
+                    const row = document.createElement('tr');
+                    
+                    // Enabled checkbox cell
+                    const enabledCell = document.createElement('td');
+                    enabledCell.className = 'enabled-cell';
+                    enabledCell.innerHTML = `
+                        <div class="enabled-checkbox">
+                            <input type="checkbox" id="enabled_${denom}_${currency}" 
+                                   data-denom="${denom}" 
+                                   data-type="enabled" 
+                                   checked>
+                            <label for="enabled_${denom}_${currency}" class="checkbox-label">
+                                <i class="fas fa-check" aria-hidden="true"></i>
+                            </label>
+                        </div>
+                    `;
+                    row.appendChild(enabledCell);
+                    
+                    // Denomination cell with badge
+                    const denomCell = document.createElement('td');
+                    denomCell.innerHTML = `
+                        <div class="denom-label" style="background-color: ${DENOM_COLORS[denom] || '#64748b'};">
+                            ${CURRENCY_SYMBOLS[currency]}${denom}
+                    </div>
+                `;
+                    row.appendChild(denomCell);
+                    
+                    // Stock input cell
+                    const stockCell = document.createElement('td');
+                    stockCell.className = 'stock-cell';
+                    stockCell.innerHTML = `
+                        <input type="number" min="0" placeholder="∞" 
+                               data-denom="${denom}" 
+                               data-currency="${currency}" 
+                               data-mode="${stockMode}">
+                        <div class="stock-cell-spinner">
+                            <button type="button" class="stock-cell-spinner-btn" 
+                                    data-action="up" data-denom="${denom}" data-currency="${currency}">▲</button>
+                            <button type="button" class="stock-cell-spinner-btn" 
+                                    data-action="down" data-denom="${denom}" data-currency="${currency}">▼</button>
+                        </div>
+                    `;
+                    row.appendChild(stockCell);
+                    
+                    row.dataset.denom = denom;
+                    table.appendChild(row);
+                });
+                
+                tableContainer.appendChild(table);
+                tableWrapper.appendChild(currencyHeader);
+                tableWrapper.appendChild(tableContainer);
+                tablesContainer.appendChild(tableWrapper);
+            });
+            
+            stockMultiCurrency.innerHTML = '';
+            stockMultiCurrency.appendChild(tablesContainer);
         }
 
         // Update stock mode buttons display
@@ -1459,11 +2340,60 @@
             });
         }
 
+        // Create currency buttons
+        function createCurrencyButtons() {
+            const container = document.getElementById('currencyButtons');
+            container.innerHTML = '';
+            
+            const currencies = [
+                { code: 'USD', flag: '🇺🇸' },
+                { code: 'EUR', flag: '🇪🇺' },
+                { code: 'JPY', flag: '🇯🇵' }
+            ];
+            
+            currencies.forEach(currency => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'currency-btn';
+                button.dataset.currency = currency.code;
+                button.innerHTML = `
+                    <span class="currency-flag">${currency.flag}</span>
+                    <span class="currency-code">${CURRENCY_SYMBOLS[currency.code]} ${currency.code}</span>
+                `;
+                container.appendChild(button);
+                
+                // Add event listener
+                button.addEventListener('click', () => {
+                    currentCurrency = currency.code;
+                    updateCurrencyButtons();
+                    updateCurrencyBackground();
+                    saveSettings();
+                });
+            });
+        }
+
         // Update currency buttons display
         function updateCurrencyButtons() {
             document.querySelectorAll('.currency-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.currency === currentCurrency);
             });
+            
+            // Update currency indicator in amount field
+            const currencyIndicator = document.getElementById('currencyIndicator');
+            if (currencyIndicator) {
+                currencyIndicator.textContent = CURRENCY_SYMBOLS[currentCurrency];
+            }
+            
+            // Update amount field placeholder with currency-specific example
+            const amountField = document.getElementById('amount');
+            if (amountField) {
+                const examples = {
+                    'USD': '85000',
+                    'EUR': '75000', 
+                    'JPY': '8500000'
+                };
+                amountField.placeholder = examples[currentCurrency] || '85000';
+            }
         }
 
         // Update background based on currency
@@ -1485,6 +2415,12 @@
         // Format number with thousands separator
         function formatNumber(num) {
             return num.toLocaleString();
+        }
+
+        // Format currency with symbol
+        function formatCurrency(amount, currency) {
+            const symbol = CURRENCY_SYMBOLS[currency] || currency;
+            return `${symbol}${formatNumber(amount)}`;
         }
 
         // Get denomination color class
@@ -1546,16 +2482,18 @@
                 const isIdeal = variant.type === 'ideal';
                 const variantClass = isIdeal ? 'ideal' : 'loose';
                 
+                let variantTypeText = isIdeal ? t('idealBlocks', {count: variant.blocks}) : t('partialBlocks', {count: variant.blocks});
+                
                 html += `
-                    <div class="variant ${variantClass}">
-                        <div class="variant-header" style="cursor: pointer;" onclick="showBlockVisualization(${JSON.stringify(variant).replace(/"/g, '&quot;')})" title="Click to visualize structure">
+                    <div class="variant ${variantClass}" style="cursor: pointer;" onclick="showBlockVisualization(${JSON.stringify(variant).replace(/"/g, '&quot;')})" title="Click to visualize structure">
+                        <div class="variant-header">
                             <div class="variant-type">
                                 <i class="fas fa-${isIdeal ? 'cubes' : 'layer-group'}"></i>
-                                ${isIdeal ? t('idealBlocks', {count: variant.blocks}) : t('bundles', {count: variant.total_bundles})}
+                                ${variantTypeText}
                                 <i class="fas fa-eye" style="margin-left: 8px; opacity: 0.7; font-size: 0.8em;"></i>
                             </div>
                             <div class="variant-total">
-                                ${formatNumber(variant.total_value)} ${data.currency}
+                                ${formatCurrency(variant.total_value, data.currency)}
                             </div>
                         </div>
                         <div class="breakdown">
@@ -1585,20 +2523,20 @@
                             `;
                         }
                     } else {
-                        if (displayOrder === 'denomination-first') {
-                            denomDisplay = `
-                                <span class="denom-badge ${getDenomClass(item.denomination)}">
-                                    ${item.denomination}
-                                </span>
-                                × ${item.bundles} ${t('bundlesText')}
-                            `;
-                        } else {
-                            denomDisplay = `
-                                ${item.bundles} ${t('bundlesText')} × 
-                                <span class="denom-badge ${getDenomClass(item.denomination)}">
-                                    ${item.denomination}
-                                </span>
-                            `;
+                    if (displayOrder === 'denomination-first') {
+                        denomDisplay = `
+                            <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                ${item.denomination}
+                            </span>
+                            × ${item.bundles} ${t('bundlesText')}
+                        `;
+                    } else {
+                        denomDisplay = `
+                            ${item.bundles} ${t('bundlesText')} × 
+                            <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                ${item.denomination}
+                            </span>
+                        `;
                         }
                     }
                     
@@ -1608,7 +2546,7 @@
                                 ${denomDisplay}
                             </div>
                             <div class="value">
-                                ${formatNumber(item.value)} ${data.currency}
+                                ${formatCurrency(item.value, data.currency)}
                             </div>
                         </div>
                     `;
@@ -1669,14 +2607,49 @@
                     const idealVariants = findIdealBlockVariants(
                         amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
                     );
-                    
-                    if (idealVariants.length > 0) {
+                
+                if (idealVariants.length > 0) {
                         result.has_ideal = true;
-                        idealVariants.forEach(([blocks, bundleCounts]) => {
+                    idealVariants.forEach(([blocks, bundleCounts]) => {
+                        const variant = {
+                            type: 'ideal',
+                            blocks: blocks,
+                            total_bundles: blocks * BLOCK_SIZE,
+                            breakdown: []
+                        };
+                        
+                        let totalValue = 0;
+                        bundleCounts.forEach((count, i) => {
+                            if (count > 0) {
+                                const denom = denoms[i];
+                                const value = denom * count * BUNDLE_SIZE;
+                                totalValue += value;
+                                variant.breakdown.push({
+                                    denomination: denom,
+                                    bundles: count,
+                                        value: value,
+                                        bills: count * BUNDLE_SIZE
+                                });
+                            }
+                        });
+                        
+                        variant.total_value = totalValue;
+                        result.variants.push(variant);
+                    });
+                } else {
+                    // Try loose bundles fallback
+                    const looseVariants = findLooseBundleVariants(
+                        amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
+                    );
+                    
+                    if (looseVariants.length > 0) {
+                            result.has_loose = true;
+                        looseVariants.forEach(bundleCounts => {
+                            const totalBundles = bundleCounts.reduce((sum, c) => sum + c, 0);
                             const variant = {
-                                type: 'ideal',
-                                blocks: blocks,
-                                total_bundles: blocks * BLOCK_SIZE,
+                                type: 'loose',
+                                blocks: Math.ceil(totalBundles / BLOCK_SIZE),
+                                total_bundles: totalBundles,
                                 breakdown: []
                             };
                             
@@ -1689,47 +2662,13 @@
                                     variant.breakdown.push({
                                         denomination: denom,
                                         bundles: count,
-                                        value: value,
-                                        bills: count * BUNDLE_SIZE
+                                            value: value,
+                                            bills: count * BUNDLE_SIZE
                                     });
                                 }
                             });
                             
                             variant.total_value = totalValue;
-                            result.variants.push(variant);
-                        });
-                    } else {
-                        // Try loose bundles fallback
-                        const looseVariants = findLooseBundleVariants(
-                            amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
-                        );
-                        
-                        if (looseVariants.length > 0) {
-                            result.has_loose = true;
-                            looseVariants.forEach(bundleCounts => {
-                                const variant = {
-                                    type: 'loose',
-                                    blocks: 0,
-                                    total_bundles: bundleCounts.reduce((sum, c) => sum + c, 0),
-                                    breakdown: []
-                                };
-                                
-                                let totalValue = 0;
-                                bundleCounts.forEach((count, i) => {
-                                    if (count > 0) {
-                                        const denom = denoms[i];
-                                        const value = denom * count * BUNDLE_SIZE;
-                                        totalValue += value;
-                                        variant.breakdown.push({
-                                            denomination: denom,
-                                            bundles: count,
-                                            value: value,
-                                            bills: count * BUNDLE_SIZE
-                                        });
-                                    }
-                                });
-                                
-                                variant.total_value = totalValue;
                                 result.variants.push(variant);
                             });
                         }
@@ -1789,6 +2728,7 @@
                             
                             variant.total_value = totalValue;
                             variant.total_bundles = totalBundles;
+                            variant.blocks = Math.ceil(totalBundles / BLOCK_SIZE);
                             result.variants.push(variant);
                         });
                     } else {
@@ -1810,20 +2750,36 @@
             const amount = parseInt(document.getElementById('amount').value);
             const maxVariants = parseInt(document.getElementById('maxVariants').value);
             
-            // Collect stock data
+            // Collect stock data for current currency only, excluding disabled denominations
             const stock = {};
-            document.querySelectorAll('#stockInputs input').forEach(input => {
+            document.querySelectorAll(`#stockMultiCurrency input[type="number"][data-currency="${currentCurrency}"]`).forEach(input => {
                 const denom = input.dataset.denom;
                 const value = input.value;
-                if (value !== '') {
+                
+                // Check if this denomination is enabled for current currency
+                const enabledCheckboxes = document.querySelectorAll(`#stockMultiCurrency input[type="checkbox"][data-denom="${denom}"]`);
+                let isEnabled = true; // default
+                
+                // Find the checkbox for the current currency
+                enabledCheckboxes.forEach(checkbox => {
+                    const checkboxCurrency = getCurrencyFromCheckbox(checkbox);
+                    if (checkboxCurrency === currentCurrency) {
+                        isEnabled = checkbox.checked;
+                    }
+                });
+                
+                if (isEnabled && value !== '') {
                     // Convert bills to bundles if in bills mode
                     if (stockMode === 'bills') {
                         // Convert individual bills to equivalent bundles (with fractional support)
                         stock[denom] = Math.floor(parseInt(value) / BUNDLE_SIZE);
                     } else {
                         // Already in bundles
-                        stock[denom] = value;
+                    stock[denom] = value;
                     }
+                } else if (!isEnabled) {
+                    // Explicitly set to 0 for disabled denominations
+                    stock[denom] = 0;
                 }
             });
             
@@ -1872,16 +2828,7 @@
             });
         });
 
-        // Currency buttons event handlers
-        document.querySelectorAll('.currency-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentCurrency = btn.dataset.currency;
-                updateCurrencyButtons();
-                updateCurrencyBackground();
-                updateStockInputs();
-                saveSettings();
-            });
-        });
+
 
         // Button event handlers using event delegation
         document.addEventListener('click', (e) => {
@@ -1899,6 +2846,11 @@
             // Stock mode buttons
             else if (e.target.closest('#stockModeSwitch .order-btn')) {
                 const btn = e.target.closest('#stockModeSwitch .order-btn');
+                
+                // Save current mode data before switching
+                saveStockData();
+                
+                // Switch mode
                 stockMode = btn.dataset.mode;
                 updateStockInputs();
                 saveSettings();
@@ -1909,7 +2861,7 @@
 
         // Stock inputs keyboard handlers for arrow keys
         document.addEventListener('keydown', (e) => {
-            if (e.target.matches('#stockInputs input')) {
+            if (e.target.matches('#stockMultiCurrency input')) {
                 const input = e.target;
                 const currentValue = input.value;
                 
@@ -1938,10 +2890,37 @@
 
         // Stock inputs change handler for manual input
         document.addEventListener('input', (e) => {
-            if (e.target.matches('#stockInputs input')) {
-                // Debounce saving
+            if (e.target.matches('#stockMultiCurrency input')) {
+                // Save immediately for better UX
                 clearTimeout(window.saveStockTimeout);
-                window.saveStockTimeout = setTimeout(saveStockData, 500);
+                window.saveStockTimeout = setTimeout(saveStockData, 100);
+            }
+        });
+
+        // Checkbox change handler
+        document.addEventListener('change', (e) => {
+            if (e.target.matches('#stockMultiCurrency input[type="checkbox"]')) {
+                const denom = e.target.dataset.denom;
+                const isEnabled = e.target.checked;
+                
+                // Update visual state of the row
+                const row = e.target.closest('tr');
+                if (row) {
+                    if (isEnabled) {
+                        row.style.opacity = '1';
+                        row.querySelectorAll('input[type="number"]').forEach(input => {
+                            input.disabled = false;
+                        });
+                    } else {
+                        row.style.opacity = '0.5';
+                        row.querySelectorAll('input[type="number"]').forEach(input => {
+                            input.disabled = true;
+                        });
+                    }
+                }
+                
+                // Save changes
+                saveStockData();
             }
         });
 
@@ -1952,7 +2931,7 @@
         // Function to perform spinner action
         function performSpinnerAction(button) {
             const action = button.dataset.action;
-            const input = button.closest('.stock-input-container').querySelector('input');
+            const input = button.closest('.stock-cell').querySelector('input');
             const currentValue = input.value.trim();
             
             if (action === 'up') {
@@ -2006,7 +2985,7 @@
 
         // Mouse down handler for spinner buttons
         document.addEventListener('mousedown', (e) => {
-            if (e.target.matches('.stock-spinner-btn')) {
+            if (e.target.matches('.stock-spinner-btn, .stock-cell-spinner-btn')) {
                 const button = e.target;
                 
                 // Prevent text selection
@@ -2025,7 +3004,7 @@
 
         // Mouse up handler for spinner buttons
         document.addEventListener('mouseup', (e) => {
-            if (e.target.matches('.stock-spinner-btn')) {
+            if (e.target.matches('.stock-spinner-btn, .stock-cell-spinner-btn')) {
                 const button = e.target;
                 
                 // Stop auto-repeat
@@ -2040,7 +3019,7 @@
 
         // Mouse leave handler for spinner buttons (stop repeat if mouse leaves button)
         document.addEventListener('mouseleave', (e) => {
-            if (e.target.matches('.stock-spinner-btn')) {
+            if (e.target.matches('.stock-spinner-btn, .stock-cell-spinner-btn')) {
                 const button = e.target;
                 
                 // Stop auto-repeat
@@ -2055,24 +3034,381 @@
         document.addEventListener('mouseup', () => {
             stopSpinnerRepeat();
             // Remove visual feedback from all buttons
-            document.querySelectorAll('.stock-spinner-btn').forEach(btn => {
+            document.querySelectorAll('.stock-spinner-btn, .stock-cell-spinner-btn').forEach(btn => {
                 btn.style.transform = '';
             });
         });
+
+        // ====================================================================
+        // CUSTOM DIALOG SYSTEM
+        // ====================================================================
+
+        // Show custom alert dialog
+        function showAlert(title, message, type = 'info', htmlContent = null) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customDialog');
+                const titleEl = document.getElementById('dialogTitle');
+                const messageEl = document.getElementById('dialogMessage');
+                const cancelBtn = document.getElementById('dialogCancelBtn');
+                const confirmBtn = document.getElementById('dialogConfirmBtn');
+                
+                titleEl.textContent = title;
+                
+                if (htmlContent) {
+                    messageEl.innerHTML = message + htmlContent;
+                } else {
+                    messageEl.textContent = message;
+                }
+                
+                // Hide cancel button for alerts
+                cancelBtn.style.display = 'none';
+                confirmBtn.textContent = t('ok');
+                confirmBtn.className = 'dialog-btn dialog-btn-primary';
+                
+                // Apply type-specific styling
+                if (type === 'error') {
+                    confirmBtn.classList.add('danger');
+                }
+                
+                modal.classList.add('show');
+                
+                const handleConfirm = () => {
+                    modal.classList.remove('show');
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                    resolve(true);
+                };
+                
+                confirmBtn.addEventListener('click', handleConfirm);
+                
+                // Close on background click
+                const handleBackgroundClick = (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                        modal.removeEventListener('click', handleBackgroundClick);
+                        resolve(true);
+                    }
+                };
+                modal.addEventListener('click', handleBackgroundClick);
+            });
+        }
+
+        // Show custom confirm dialog
+        function showConfirm(title, message, type = 'info', htmlContent = null) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customDialog');
+                const titleEl = document.getElementById('dialogTitle');
+                const messageEl = document.getElementById('dialogMessage');
+                const cancelBtn = document.getElementById('dialogCancelBtn');
+                const confirmBtn = document.getElementById('dialogConfirmBtn');
+                
+                titleEl.textContent = title;
+                
+                if (htmlContent) {
+                    messageEl.innerHTML = message + htmlContent;
+                } else {
+                    messageEl.textContent = message;
+                }
+                
+                // Show both buttons for confirm
+                cancelBtn.style.display = 'block';
+                cancelBtn.textContent = t('cancel');
+                confirmBtn.textContent = t('confirm');
+                confirmBtn.className = 'dialog-btn dialog-btn-primary';
+                
+                // Apply type-specific styling
+                if (type === 'danger') {
+                    confirmBtn.classList.add('danger');
+                }
+                
+                modal.classList.add('show');
+                
+                const handleConfirm = () => {
+                    modal.classList.remove('show');
+                    cleanup();
+                    resolve(true);
+                };
+                
+                const handleCancel = () => {
+                    modal.classList.remove('show');
+                    cleanup();
+                    resolve(false);
+                };
+                
+                const cleanup = () => {
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                    modal.removeEventListener('click', handleBackgroundClick);
+                };
+                
+                confirmBtn.addEventListener('click', handleConfirm);
+                cancelBtn.addEventListener('click', handleCancel);
+                
+                // Close on background click (acts as cancel)
+                const handleBackgroundClick = (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                        cleanup();
+                        resolve(false);
+                    }
+                };
+                modal.addEventListener('click', handleBackgroundClick);
+            });
+        }
+
+        // ====================================================================
+        // ORDER EXECUTION
+        // ====================================================================
+
+        // Check if order can be executed with current stock
+        function checkOrderExecutable(variant) {
+            const currentStock = getCurrentStock();
+            
+            for (const item of variant.breakdown) {
+                const denom = item.denomination;
+                const availableStock = currentStock[denom] || 0;
+                
+                // If stock is infinite (INFINITY), we can always fulfill the order
+                if (availableStock === INFINITY) {
+                    continue;
+                }
+                
+                let requiredStock;
+                if (variant.type === 'partial' && item.type === 'partial') {
+                    // For partial items, we need at least the partial amount in bills
+                    const requiredBills = item.bills;
+                    const availableBills = availableStock * (stockMode === 'bundles' ? BUNDLE_SIZE : 1);
+                    if (availableBills < requiredBills) {
+                        return false;
+                    }
+                } else {
+                    // For full bundles
+                    requiredStock = item.bundles || 0;
+                    if (stockMode === 'bills') {
+                        // Convert required bundles to bills
+                        const requiredBills = requiredStock * BUNDLE_SIZE;
+                        const availableBills = availableStock;
+                        if (availableBills < requiredBills) {
+                            return false;
+                        }
+                    } else {
+                        // Direct bundle comparison
+                        if (availableStock < requiredStock) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            return true;
+        }
+
+        // Get current stock for the selected currency
+        function getCurrentStock() {
+            const stock = {};
+            document.querySelectorAll(`#stockMultiCurrency input[type="number"][data-currency="${currentCurrency}"]`).forEach(input => {
+                const denom = input.dataset.denom;
+                const value = input.value;
+                
+                // Check if denomination is enabled for current currency
+                const enabledCheckboxes = document.querySelectorAll(`#stockMultiCurrency input[type="checkbox"][data-denom="${denom}"]`);
+                let isEnabled = true; // default
+                
+                // Find the checkbox for the current currency
+                enabledCheckboxes.forEach(checkbox => {
+                    const checkboxCurrency = getCurrencyFromCheckbox(checkbox);
+                    if (checkboxCurrency === currentCurrency) {
+                        isEnabled = checkbox.checked;
+                    }
+                });
+                
+                if (!isEnabled) {
+                    // Disabled denomination
+                    stock[denom] = 0;
+                } else if (value === '' || value === null) {
+                    // Empty field means unlimited stock
+                    stock[denom] = INFINITY;
+                } else {
+                    // Specific value
+                    stock[denom] = parseInt(value);
+                }
+            });
+            return stock;
+        }
+
+        // Calculate what stock changes would be without actually changing anything
+        function calculateStockChanges(variant) {
+            const stockChanges = [];
+            
+            for (const item of variant.breakdown) {
+                const denom = item.denomination;
+                const input = document.querySelector(`#stockMultiCurrency input[type="number"][data-currency="${currentCurrency}"][data-denom="${denom}"]`);
+                
+                if (input) {
+                    const inputValue = input.value;
+                    const isInfinite = inputValue === '' || inputValue === null;
+                    const currentValue = isInfinite ? INFINITY : parseInt(inputValue) || 0;
+                    const beforeValue = isInfinite ? null : currentValue;
+                    let deduction;
+                    
+                    if (variant.type === 'partial' && item.type === 'partial') {
+                        // For partial items, deduct bills
+                        const requiredBills = item.bills;
+                        if (stockMode === 'bundles') {
+                            // Convert bills to bundles for deduction
+                            deduction = Math.ceil(requiredBills / BUNDLE_SIZE);
+                        } else {
+                            // Direct bill deduction
+                            deduction = requiredBills;
+                        }
+                    } else {
+                        // For full bundles
+                        const requiredBundles = item.bundles || 0;
+                        if (stockMode === 'bills') {
+                            // Convert bundles to bills for deduction
+                            deduction = requiredBundles * BUNDLE_SIZE;
+                        } else {
+                            // Direct bundle deduction
+                            deduction = requiredBundles;
+                        }
+                    }
+                    
+                    let afterValue;
+                    if (isInfinite) {
+                        // Infinite stock remains infinite after deduction
+                        afterValue = null;
+                    } else {
+                        const newValue = Math.max(0, currentValue - deduction);
+                        afterValue = newValue === 0 ? null : newValue;
+                    }
+                    
+                    // Record the change
+                    if (deduction > 0) {
+                        stockChanges.push({
+                            denomination: denom,
+                            before: beforeValue,
+                            after: afterValue,
+                            deduction: deduction,
+                            isInfinite: isInfinite
+                        });
+                    }
+                }
+            }
+            
+            return stockChanges;
+        }
+
+        // Generate stock changes HTML
+        function generateStockChangesHTML(stockChanges, currency = currentCurrency) {
+            if (stockChanges.length === 0) {
+                return '';
+            }
+            
+            const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
+            
+            let html = `
+                <div class="stock-changes">
+                    <div class="stock-changes-title">${t('stockChanges')}</div>
+            `;
+            
+            stockChanges.forEach(change => {
+                const color = DENOM_COLORS[change.denomination] || '#64748b';
+                const modeText = stockMode === 'bundles' ? 'bundles' : 'bills';
+                
+                html += `
+                    <div class="stock-change-item">
+                        <div class="stock-change-denom">
+                            <span class="stock-change-denom-badge" style="background-color: ${color};">
+                                ${currencySymbol}${change.denomination}
+                            </span>
+                            <span class="stock-change-deduction">
+                                -${change.deduction} ${t(modeText)}
+                            </span>
+                        </div>
+                        <div class="stock-change-values">
+                            <span class="stock-change-before">${change.before === null ? '∞' : change.before}</span>
+                            <span class="stock-change-arrow">→</span>
+                            <span class="stock-change-after">${change.isInfinite ? '∞' : (change.after === null ? '0' : change.after)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Execute order and deduct from stock
+        async function executeOrder(variant) {
+            if (!checkOrderExecutable(variant)) {
+                await showAlert(t('executionError'), t('insufficientStock'), 'error');
+                return false;
+            }
+            
+            // Calculate stock changes preview
+            const previewStockChanges = calculateStockChanges(variant);
+            const previewStockChangesHTML = generateStockChangesHTML(previewStockChanges, currentCurrency);
+            
+            const confirmed = await showConfirm(
+                t('confirmExecution'), 
+                t('orderExecutionConfirm'), 
+                'danger',
+                previewStockChangesHTML
+            );
+            
+            if (!confirmed) {
+                return false;
+            }
+            
+            // Apply the stock changes (we already calculated them for preview)
+            previewStockChanges.forEach(change => {
+                const input = document.querySelector(`#stockMultiCurrency input[type="number"][data-currency="${currentCurrency}"][data-denom="${change.denomination}"]`);
+                if (input) {
+                    if (change.isInfinite) {
+                        // Keep infinite stock as empty field
+                        input.value = '';
+                    } else {
+                        const newValue = change.after;
+                        input.value = newValue === null ? '' : newValue.toString();
+                    }
+                }
+            });
+            
+            // Save updated stock
+            saveStockData();
+            
+            // Show success message with stock changes
+            const stockChangesHTML = generateStockChangesHTML(previewStockChanges, currentCurrency);
+            await showAlert(t('executionSuccess'), t('orderExecuted'), 'success', stockChangesHTML);
+            
+            // Close modal
+            document.getElementById('blockModal').classList.remove('show');
+            
+            return true;
+        }
 
         // ====================================================================
         // BLOCK VISUALIZATION
         // ====================================================================
 
         let rotationInterval = null;
+        let currentVariantForExecution = null;
 
         // Show block visualization modal
         function showBlockVisualization(variant) {
             const modal = document.getElementById('blockModal');
             const title = document.getElementById('blockModalTitle');
+            const executeBtn = document.getElementById('executeOrderBtn');
             
-            let titleText = `${formatNumber(variant.total_value)} ${lastResults.currency}`;
+            // Store current variant for execution
+            currentVariantForExecution = variant;
+            
+            let titleText = `${formatCurrency(variant.total_value, lastResults.currency)}`;
             title.textContent = titleText;
+            
+            // Check if order can be executed (sufficient stock)
+            const canExecute = checkOrderExecutable(variant);
+            executeBtn.disabled = !canExecute;
+            executeBtn.title = canExecute ? t('orderExecutionConfirm') : t('insufficientStock');
             
             buildBlockVisualization(variant);
             modal.classList.add('show');
@@ -2160,7 +3496,7 @@
                     blockLabel.className = 'block-title';
                     blockLabel.style.fontSize = '1.2rem';
                     const blockValue = calculateBlockValue(variant, blockNum);
-                    blockLabel.textContent = `${blockNum + 1}. ${formatNumber(blockValue)} ${lastResults.currency}`;
+                    blockLabel.textContent = `${blockNum + 1}. ${formatCurrency(blockValue, lastResults.currency)}`;
                     blockContainer.appendChild(blockLabel);
                 }
                 
@@ -2344,9 +3680,17 @@
         // Event handlers for block visualization
         document.getElementById('closeBlockModal').addEventListener('click', () => {
             document.getElementById('blockModal').classList.remove('show');
+            currentVariantForExecution = null;
             if (rotationInterval) {
                 clearInterval(rotationInterval);
                 rotationInterval = null;
+            }
+        });
+
+        // Execute order button handler
+        document.getElementById('executeOrderBtn').addEventListener('click', async () => {
+            if (currentVariantForExecution) {
+                await executeOrder(currentVariantForExecution);
             }
         });
 
@@ -2354,6 +3698,7 @@
         document.getElementById('blockModal').addEventListener('click', (e) => {
             if (e.target.id === 'blockModal') {
                 document.getElementById('blockModal').classList.remove('show');
+                currentVariantForExecution = null;
                 if (rotationInterval) {
                     clearInterval(rotationInterval);
                     rotationInterval = null;
@@ -2363,6 +3708,7 @@
 
         // Initialize
         initLanguage();
+        createCurrencyButtons();
         updateCurrencyButtons();
         updateCurrencyBackground();
         updateDisplayOrderButtons();
