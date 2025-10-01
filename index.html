@@ -656,6 +656,25 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn.stop-btn {
+            background: var(--danger-color);
+        }
+
+        .btn.stop-btn:hover {
+            background: #dc2626;
+        }
+
         .error {
             background: #fef2f2;
             border: 1px solid #fecaca;
@@ -982,25 +1001,64 @@
         .block-modal-content {
             background: white;
             border-radius: 20px;
-            padding: 30px;
+            min-width: 700px;
             max-width: 90vw;
             max-height: 90vh;
-            overflow: auto;
-            /* position: relative; */
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .block-modal-content {
+                min-width: 300px;
+            }
+        }
+
+        .block-modal-header {
+            padding: 25px 30px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .block-modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .block-modal-footer {
+            padding: 20px 30px;
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-shrink: 0;
+            background: var(--bg-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .block-modal-header,
+            .block-modal-body,
+            .block-modal-footer {
+                padding: 15px 20px;
+            }
         }
 
         .block-modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
             background: none;
             border: none;
             font-size: 2rem;
             cursor: pointer;
             color: var(--text-secondary);
             transition: color 0.3s ease;
-            z-index: 100;
+            padding: 0;
+            line-height: 1;
         }
 
         .block-modal-close:hover {
@@ -1033,6 +1091,13 @@
             font-size: 1.5rem;
             font-weight: 600;
             color: var(--text-primary);
+            margin: 0;
+        }
+
+        .block-item-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
             margin-bottom: 10px;
             text-align: center;
         }
@@ -1045,12 +1110,6 @@
             image-rendering: -webkit-optimize-contrast;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
-        }
-
-        .block-3d:hover {
-            transform: scale(1.05);
-            image-rendering: crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
         }
 
         .block-layer {
@@ -1446,6 +1505,7 @@
                                 <i class="fas fa-info-circle"></i>
                             </span>
                         </h3>
+                            <div style="display: flex; gap: 10px;">
                             <div class="display-order-switch" id="stockModeSwitch">
                                 <button type="button" class="order-btn active" data-mode="bundles" title="Bundle Stock">
                                     <i class="fas fa-layer-group"></i>
@@ -1453,6 +1513,15 @@
                                 <button type="button" class="order-btn" data-mode="bills" title="Loose Bills Stock">
                                     <i class="fas fa-money-bill"></i>
                                 </button>
+                                </div>
+                                <div class="display-order-switch" id="denominationOrderSwitch">
+                                    <button type="button" class="order-btn active" data-order="high-to-low" title="Large to small denominations">
+                                        <i class="fas fa-arrow-down-wide-short"></i>
+                                    </button>
+                                    <button type="button" class="order-btn" data-order="low-to-high" title="Small to large denominations">
+                                        <i class="fas fa-arrow-up-short-wide"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="stock-multi-currency" id="stockMultiCurrency">
@@ -1519,16 +1588,20 @@
     <!-- Block Visualization Modal -->
     <div class="block-modal" id="blockModal">
         <div class="block-modal-content">
-            <button class="block-modal-close" id="closeBlockModal">&times;</button>
-            <div class="block-visualization">
+            <div class="block-modal-header">
                 <div class="block-title" id="blockModalTitle" data-i18n="blockVisualization">Block Visualization</div>
+            <button class="block-modal-close" id="closeBlockModal">&times;</button>
+            </div>
+            <div class="block-modal-body">
+            <div class="block-visualization">
                 <div class="block-3d" id="block3d">
                     <!-- Will be populated by JavaScript -->
                 </div>
-                <div style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+                </div>
+            </div>
+            <div class="block-modal-footer">
                     <button class="viz-btn execute-order-btn" id="executeOrderBtn" data-i18n="executeOrder">Execute Order</button>
                     <button class="viz-btn" onclick="document.getElementById('blockModal').classList.remove('show')" data-i18n="closeDialog">Close</button>
-                </div>
             </div>
         </div>
     </div>
@@ -1595,6 +1668,9 @@
                 bills: 'Bills',
                 networkError: 'Network error:',
                 calculating: 'Calculating...',
+                stopCalculation: 'Stop',
+                calculationStopped: 'Calculation stopped by user',
+                foundVariants: 'Found {count} variants',
                 bundlesText: 'bundles',
                 viewOnGitHub: 'View on GitHub',
                 blockVisualization: 'Block Visualization',
@@ -1641,6 +1717,9 @@
                 bills: 'Купюры',
                 networkError: 'Ошибка сети:',
                 calculating: 'Вычисление...',
+                stopCalculation: 'Остановить',
+                calculationStopped: 'Расчет остановлен пользователем',
+                foundVariants: 'Найдено вариантов: {count}',
                 bundlesText: 'пачек',
                 viewOnGitHub: 'Посмотреть на GitHub',
                 blockVisualization: 'Визуализация блока',
@@ -1670,6 +1749,11 @@
         let currentCurrency = 'USD';
         let displayOrder = 'denomination-first'; // 'denomination-first' or 'quantity-first'
         let stockMode = 'bills'; // 'bundles' or 'bills'
+        let denominationOrder = 'high-to-low'; // 'high-to-low' or 'low-to-high'
+        
+        // Calculation control
+        let stopCalculationRequested = false;
+        let isCalculating = false;
 
         // Detect browser language
         function detectBrowserLanguage() {
@@ -1736,6 +1820,7 @@
                 currency: currentCurrency,
                 displayOrder: displayOrder,
                 stockMode: stockMode,
+                denominationOrder: denominationOrder,
                 language: currentLang
             };
             localStorage.setItem('cash-cleaner-settings', JSON.stringify(settings));
@@ -1750,6 +1835,7 @@
                     currentCurrency = settings.currency || 'USD';
                     displayOrder = settings.displayOrder || 'denomination-first';
                     stockMode = settings.stockMode || 'bills';
+                    denominationOrder = settings.denominationOrder || 'high-to-low';
                     if (settings.language) {
                         currentLang = settings.language;
                     }
@@ -1980,11 +2066,36 @@
         }
 
         // ====================================================================
-        // CASH CLEANER CALCULATOR LOGIC (Ported from Python)
+        // CASH CLEANER CALCULATOR LOGIC
+        // WEB WORKER 
         // ====================================================================
 
+        // Create inline worker
+        const workerCode = `
+            // Constants (same as main thread)
+            const BUNDLE_SIZE = 100;
+            const BLOCK_SIZE = 30;
+            const INFINITY = 1000000000;
+            const FULL_BLOCK_VALUE = BUNDLE_SIZE * BLOCK_SIZE; // 3000
+            
+            const CURRENCIES = {
+                'USD': [100, 50, 20, 10],
+                'EUR': [100, 50, 20],
+                'JPY': [10000, 5000, 1000]
+            };
+            
+            // Stop flag
+            let stopRequested = false;
+
         // Depth-first search for ideal blocks
-        function searchBlocks(denoms, blocks, i, bundlesLeft, valueLeft, cur, solutions, stock) {
+            function searchBlocks(denoms, blocks, i, bundlesLeft, valueLeft, cur, solutions, stock, context) {
+                // Check stop request, timeout and solution limit
+                if (stopRequested || 
+                    Date.now() - context.startTime > context.maxTime || 
+                    solutions.length >= context.maxSolutions) {
+                    return;
+                }
+
             if (i === denoms.length - 1) {
                 const d = denoms[i];
                 const neededBundles = d ? Math.floor(valueLeft / d) : 0;
@@ -1992,7 +2103,17 @@
                     neededBundles === bundlesLeft && 
                     neededBundles <= stock[d]) {
                     cur[i] = neededBundles;
-                    solutions.push([blocks, [...cur]]);
+                        const solution = [blocks, [...cur]];
+                        solutions.push(solution);
+                        context.solutionCount++;
+                        // Send solution to main thread
+                        self.postMessage({
+                            type: 'solution',
+                            data: {
+                                solution: solution,
+                                variantType: 'ideal'
+                            }
+                        });
                 }
                 return;
             }
@@ -2000,47 +2121,103 @@
             const d = denoms[i];
             const maxForD = Math.min(bundlesLeft, stock[d], Math.floor(valueLeft / d));
             
-            for (let b = 0; b <= maxForD; b++) {
+                // Smart sampling
+                const SMART_SAMPLE_THRESHOLD = 1000;
+                let step = 1;
+                if (maxForD > SMART_SAMPLE_THRESHOLD) {
+                    step = Math.max(1, Math.floor(maxForD / 100));
+                }
+                
+                for (let b = 0; b <= maxForD; b += step) {
+                    if (stopRequested || 
+                        Date.now() - context.startTime > context.maxTime || 
+                        solutions.length >= context.maxSolutions) {
+                        break;
+                    }
                 cur[i] = b;
-                searchBlocks(denoms, blocks, i + 1, bundlesLeft - b, valueLeft - d * b, cur, solutions, stock);
-            }
+                    searchBlocks(denoms, blocks, i + 1, bundlesLeft - b, valueLeft - d * b, cur, solutions, stock, context);
+                }
+                
+                // Always try the maximum value (boundary condition)
+                if (step > 1 && maxForD % step !== 0) {
+                    cur[i] = maxForD;
+                    searchBlocks(denoms, blocks, i + 1, bundlesLeft - maxForD, valueLeft - d * maxForD, cur, solutions, stock, context);
+                }
+                
             cur[i] = 0;
         }
 
         // Enumerate ideal block configurations
         function enumerateIdealConfigs(amount, denoms, stock) {
-            if (amount % BUNDLE_SIZE !== 0) return [];
+                if (amount % BUNDLE_SIZE !== 0) {
+                    return [];
+                }
 
             const units = Math.floor(amount / BUNDLE_SIZE);
             const denomsSorted = [...denoms].sort((a, b) => b - a);
 
+                const largestBundleValue = Math.max(...denomsSorted) * BUNDLE_SIZE;
             const smallestBundleValue = Math.min(...denomsSorted) * BUNDLE_SIZE;
+                
+                const theoreticalMinBlocks = Math.ceil(amount / (largestBundleValue * BLOCK_SIZE));
             const theoreticalMaxBlocks = Math.floor(amount / (smallestBundleValue * BLOCK_SIZE));
             
             const totalStockBundles = denomsSorted.reduce((sum, d) => sum + stock[d], 0);
             const maxBlocks = Math.min(theoreticalMaxBlocks, Math.floor(totalStockBundles / BLOCK_SIZE));
+                const minBlocks = theoreticalMinBlocks;
 
             const solutions = [];
             const cur = new Array(denomsSorted.length).fill(0);
 
-            for (let blocks = 1; blocks <= maxBlocks; blocks++) {
+                const context = {
+                    startTime: Date.now(),
+                    maxTime: 5000,
+                    maxSolutions: 1000,
+                    solutionCount: 0
+                };
+
+                for (let blocks = minBlocks; blocks <= maxBlocks; blocks++) {
+                    if (stopRequested || 
+                        Date.now() - context.startTime > context.maxTime || 
+                        solutions.length >= context.maxSolutions) {
+                        break;
+                    }
+                    
                 const bundlesTotal = blocks * BLOCK_SIZE;
-                if (bundlesTotal > totalStockBundles) break;
+                    if (bundlesTotal > totalStockBundles) {
+                        break;
+                    }
                 
-                searchBlocks(denomsSorted, blocks, 0, bundlesTotal, units, cur, solutions, stock);
+                    searchBlocks(denomsSorted, blocks, 0, bundlesTotal, units, cur, solutions, stock, context);
             }
 
             return solutions;
         }
 
         // Depth-first search for loose bundles
-        function searchBundles(denoms, i, valueLeft, cur, solutions, stock) {
+            function searchBundles(denoms, i, valueLeft, cur, solutions, stock, context) {
+                if (stopRequested || 
+                    Date.now() - context.startTime > context.maxTime || 
+                    solutions.length >= context.maxSolutions) {
+                    return;
+                }
+
             if (i === denoms.length - 1) {
                 const d = denoms[i];
                 const needed = d ? Math.floor(valueLeft / d) : 0;
                 if (valueLeft === d * needed && needed <= stock[d]) {
                     cur[i] = needed;
-                    solutions.push([...cur]);
+                        const solution = [...cur];
+                        solutions.push(solution);
+                        context.solutionCount++;
+                        // Send solution to main thread
+                        self.postMessage({
+                            type: 'solution',
+                            data: {
+                                solution: solution,
+                                variantType: 'loose'
+                            }
+                        });
                 }
                 return;
             }
@@ -2048,16 +2225,37 @@
             const d = denoms[i];
             const maxForD = Math.min(stock[d], Math.floor(valueLeft / d));
             
-            for (let b = 0; b <= maxForD; b++) {
+                // Smart sampling
+                const SMART_SAMPLE_THRESHOLD = 1000;
+                let step = 1;
+                if (maxForD > SMART_SAMPLE_THRESHOLD) {
+                    step = Math.max(1, Math.floor(maxForD / 100));
+                }
+                
+                for (let b = 0; b <= maxForD; b += step) {
+                    if (stopRequested || 
+                        Date.now() - context.startTime > context.maxTime || 
+                        solutions.length >= context.maxSolutions) {
+                        break;
+                    }
                 cur[i] = b;
-                searchBundles(denoms, i + 1, valueLeft - d * b, cur, solutions, stock);
-            }
+                    searchBundles(denoms, i + 1, valueLeft - d * b, cur, solutions, stock, context);
+                }
+                
+                // Always try the maximum value
+                if (step > 1 && maxForD % step !== 0) {
+                    cur[i] = maxForD;
+                    searchBundles(denoms, i + 1, valueLeft - d * maxForD, cur, solutions, stock, context);
+                }
+                
             cur[i] = 0;
         }
 
         // Enumerate loose bundle configurations
         function enumerateLooseConfigs(amount, denoms, stock) {
-            if (amount % BUNDLE_SIZE !== 0) return [];
+                if (amount % BUNDLE_SIZE !== 0) {
+                    return [];
+                }
 
             const units = Math.floor(amount / BUNDLE_SIZE);
             const denomsSorted = [...denoms].sort((a, b) => b - a);
@@ -2065,26 +2263,23 @@
             const cur = new Array(denomsSorted.length).fill(0);
             const solutions = [];
             
-            searchBundles(denomsSorted, 0, units, cur, solutions, stock);
+                const context = {
+                    startTime: Date.now(),
+                    maxTime: 5000,
+                    maxSolutions: 1000,
+                    solutionCount: 0
+                };
+                
+                searchBundles(denomsSorted, 0, units, cur, solutions, stock, context);
+                
             return solutions;
         }
 
-
-
-        // Enumerate partial bundle configurations (with incomplete packs)
-        function enumeratePartialConfigs(amount, denoms, stock) {
-            const denomsSorted = [...denoms].sort((a, b) => b - a);
-            const cur = new Array(denomsSorted.length).fill(0);
-            const solutions = [];
-            
-            // Add a timeout mechanism to prevent infinite calculations
-            const startTime = Date.now();
-            const maxTime = 5000; // 5 seconds maximum
-            const maxSolutions = 1000; // Maximum number of solutions to find
-            
-            function searchWithTimeout(denoms, i, billsLeft, cur, solutions, stock) {
-                // Check timeout and solution limit
-                if (Date.now() - startTime > maxTime || solutions.length >= maxSolutions) {
+            // Search with timeout for partial bundles
+            function searchWithTimeout(denoms, i, billsLeft, cur, solutions, stock, startTime, maxTime, maxSolutions) {
+                if (stopRequested || 
+                    Date.now() - startTime > maxTime || 
+                    solutions.length >= maxSolutions) {
                     return;
                 }
                 
@@ -2093,28 +2288,64 @@
                     const needed = d ? Math.floor(billsLeft / d) : 0;
                     if (billsLeft === d * needed && needed <= stock[d] * BUNDLE_SIZE) {
                         cur[i] = needed;
-                        solutions.push([...cur]);
+                        const solution = [...cur];
+                        solutions.push(solution);
+                        // Send solution to main thread
+                        self.postMessage({
+                            type: 'solution',
+                            data: {
+                                solution: solution,
+                                variantType: 'partial'
+                            }
+                        });
                     }
                     return;
                 }
 
                 const d = denoms[i];
-                // Limit the maximum number of bills to prevent infinite loops
                 const theoreticalMax = Math.ceil(billsLeft / d);
                 const stockMax = stock[d] === INFINITY ? theoreticalMax : stock[d] * BUNDLE_SIZE;
                 const maxForD = Math.min(stockMax, theoreticalMax);
                 
-                for (let bills = 0; bills <= maxForD; bills++) {
-                    if (Date.now() - startTime > maxTime || solutions.length >= maxSolutions) {
+                // Smart sampling
+                const SMART_SAMPLE_THRESHOLD = 1000;
+                let step = 1;
+                if (maxForD > SMART_SAMPLE_THRESHOLD) {
+                    step = Math.max(1, Math.floor(maxForD / 100));
+                }
+                
+                for (let bills = 0; bills <= maxForD; bills += step) {
+                    if (stopRequested || 
+                        Date.now() - startTime > maxTime || 
+                        solutions.length >= maxSolutions) {
                         break;
                     }
                     cur[i] = bills;
-                    searchWithTimeout(denoms, i + 1, billsLeft - d * bills, cur, solutions, stock);
+                    searchWithTimeout(denoms, i + 1, billsLeft - d * bills, cur, solutions, stock, startTime, maxTime, maxSolutions);
                 }
+                
+                // Always try the maximum value
+                if (step > 1 && maxForD % step !== 0) {
+                    cur[i] = maxForD;
+                    searchWithTimeout(denoms, i + 1, billsLeft - d * maxForD, cur, solutions, stock, startTime, maxTime, maxSolutions);
+                }
+                
                 cur[i] = 0;
             }
             
-            searchWithTimeout(denomsSorted, 0, amount, cur, solutions, stock);
+            // Enumerate partial bundle configurations
+            function enumeratePartialConfigs(amount, denoms, stock) {
+                const startTime = Date.now();
+                
+                const denomsSorted = [...denoms].sort((a, b) => b - a);
+                const cur = new Array(denomsSorted.length).fill(0);
+                const solutions = [];
+                
+                const maxTime = 5000;
+                const maxSolutions = 1000;
+                
+                searchWithTimeout(denomsSorted, 0, amount, cur, solutions, stock, startTime, maxTime, maxSolutions);
+                
             return solutions;
         }
 
@@ -2158,58 +2389,103 @@
             return stock;
         }
 
-        // Find ideal block variants
-        function findIdealBlockVariants(amount, currencyCode, maxVariants = 5, bundlesStock = null) {
+            // Message handler
+            self.onmessage = function(e) {
+                const { type, data } = e.data;
+                
+                if (type === 'start') {
+                    stopRequested = false;
+                    
+                    const { amount, currencyCode, maxVariants, bundlesStock } = data;
+                    
+                    try {
             const denoms = CURRENCIES[currencyCode.toUpperCase()];
-            if (!denoms) return [];
+                        if (!denoms) {
+                            throw new Error(\`Currency \${currencyCode} not supported\`);
+                        }
             
             const stock = normalizeStock(denoms, bundlesStock);
-            const raw = enumerateIdealConfigs(amount, denoms, stock);
-            
-            // Sort by score
             const denomsSorted = [...denoms].sort((a, b) => b - a);
-            raw.sort((a, b) => compareScores(
+                        
+                        let foundIdeal = false;
+                        let foundLoose = false;
+                        let foundPartial = false;
+                        
+                        // Try ideal blocks first - only possible if amount is divisible by full block value
+                        // FULL_BLOCK_VALUE = BUNDLE_SIZE * BLOCK_SIZE = 100 * 30 = 3000
+                        if (amount % FULL_BLOCK_VALUE === 0 && !stopRequested) {
+                            const idealVariants = enumerateIdealConfigs(amount, denoms, stock);
+                            
+                            if (idealVariants.length > 0) {
+                                // Sort and send best variants
+                                idealVariants.sort((a, b) => compareScores(
                 scoreIdeal(a[0], a[1], denomsSorted),
                 scoreIdeal(b[0], b[1], denomsSorted)
             ));
             
-            return raw.slice(0, maxVariants);
-        }
-
-        // Find loose bundle variants
-        function findLooseBundleVariants(amount, currencyCode, maxVariants = 5, bundlesStock = null) {
-            const denoms = CURRENCIES[currencyCode.toUpperCase()];
-            if (!denoms) return [];
-            
-            const stock = normalizeStock(denoms, bundlesStock);
-            const raw = enumerateLooseConfigs(amount, denoms, stock);
-            
-            // Sort by score
-            const denomsSorted = [...denoms].sort((a, b) => b - a);
-            raw.sort((a, b) => compareScores(
+                                foundIdeal = true;
+                            } else if (!stopRequested) {
+                                // Try loose bundles
+                                const looseVariants = enumerateLooseConfigs(amount, denoms, stock);
+                                
+                                if (looseVariants.length > 0) {
+                                    // Sort and send best variants
+                                    looseVariants.sort((a, b) => compareScores(
                 scoreLoose(a, denomsSorted),
                 scoreLoose(b, denomsSorted)
             ));
             
-            return raw.slice(0, maxVariants);
-        }
-
-        // Find partial bundle variants (with incomplete packs)
-        function findPartialBundleVariants(amount, currencyCode, maxVariants = 5, bundlesStock = null) {
-            const denoms = CURRENCIES[currencyCode.toUpperCase()];
-            if (!denoms) return [];
-            
-            const stock = normalizeStock(denoms, bundlesStock);
-            const raw = enumeratePartialConfigs(amount, denoms, stock);
-            
-            // Sort by score
-            const denomsSorted = [...denoms].sort((a, b) => b - a);
-            raw.sort((a, b) => compareScores(
+                                    foundLoose = true;
+                                }
+                            }
+                        }
+                        
+                        // Try partial bundles if no ideal or loose found
+                        if (!foundIdeal && !foundLoose && !stopRequested) {
+                            const partialVariants = enumeratePartialConfigs(amount, denoms, stock);
+                            
+                            if (partialVariants.length > 0) {
+                                // Sort and send best variants
+                                partialVariants.sort((a, b) => compareScores(
                 scorePartial(a, denomsSorted),
                 scorePartial(b, denomsSorted)
             ));
             
-            return raw.slice(0, maxVariants);
+                                foundPartial = true;
+                            } else if (!stopRequested) {
+                                throw new Error('Cannot fulfill order with given stock');
+                            }
+                        }
+                        
+                        // Send completion
+                        self.postMessage({
+                            type: 'complete',
+                            data: {
+                                hasIdeal: foundIdeal,
+                                hasLoose: foundLoose,
+                                hasPartial: foundPartial,
+                                stopped: stopRequested
+                            }
+                        });
+                        
+                    } catch (error) {
+                        self.postMessage({
+                            type: 'error',
+                            data: { message: error.message }
+                        });
+                    }
+                } else if (type === 'stop') {
+                    stopRequested = true;
+                }
+            };
+        `;
+
+        // Create worker from blob
+        let calculationWorker = null;
+        
+        function createWorker() {
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            return new Worker(URL.createObjectURL(blob));
         }
 
         // ====================================================================
@@ -2237,6 +2513,7 @@
             
             // Update stock mode buttons
             updateStockModeButtons();
+            updateDenominationOrderButtons();
             
             // Load saved stock data for current mode
             loadStockData();
@@ -2279,7 +2556,9 @@
                 // table.appendChild(headerRow);
                 
                 // Get denominations for this currency and sort them
-                const denominations = CURRENCIES[currency].sort((a, b) => b - a);
+                const denominations = [...CURRENCIES[currency]].sort((a, b) => 
+                    denominationOrder === 'high-to-low' ? b - a : a - b
+                );
                 
                 // Create rows for each denomination
                 denominations.forEach(denom => {
@@ -2345,6 +2624,13 @@
         function updateStockModeButtons() {
             document.querySelectorAll('#stockModeSwitch .order-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.mode === stockMode);
+            });
+        }
+
+        // Update denomination order buttons display
+        function updateDenominationOrderButtons() {
+            document.querySelectorAll('#denominationOrderSwitch .order-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.order === denominationOrder);
             });
         }
 
@@ -2434,6 +2720,93 @@
         // Get denomination color class
         function getDenomClass(denom) {
             return `denom-${denom}`;
+        }
+
+        // Render a single variant (for progressive display)
+        function renderVariant(container, variant, currency) {
+            const isIdeal = variant.type === 'ideal';
+            const variantClass = isIdeal ? 'ideal' : 'loose';
+            
+            let variantTypeText = isIdeal ? t('idealBlocks', {count: variant.blocks}) : t('partialBlocks', {count: variant.blocks});
+            
+            const variantDiv = document.createElement('div');
+            variantDiv.className = `variant ${variantClass}`;
+            variantDiv.style.cursor = 'pointer';
+            variantDiv.style.animation = 'fadeIn 0.3s ease-out';
+            variantDiv.title = 'Click to visualize structure';
+            variantDiv.onclick = () => showBlockVisualization(variant);
+            
+            let breakdownHTML = '';
+            variant.breakdown.forEach(item => {
+                let denomDisplay = '';
+                let typeIcon = '';
+                
+                if (item.type === 'partial') {
+                    typeIcon = '<i class="fas fa-asterisk" style="color: orange; margin-right: 4px;" title="Partial pack"></i>';
+                    if (displayOrder === 'denomination-first') {
+                        denomDisplay = `
+                            ${typeIcon}
+                            <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                ${item.denomination}
+                            </span>
+                            × ${item.bills} bills (partial pack)
+                        `;
+                    } else {
+                        denomDisplay = `
+                            ${typeIcon}${item.bills} bills × 
+                            <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                ${item.denomination}
+                            </span>
+                            (partial pack)
+                        `;
+                    }
+                } else {
+                    if (displayOrder === 'denomination-first') {
+                        denomDisplay = `
+                            <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                ${item.denomination}
+                            </span>
+                            × ${item.bundles} ${t('bundlesText')}
+                        `;
+                    } else {
+                        denomDisplay = `
+                            ${item.bundles} ${t('bundlesText')} × 
+                            <span class="denom-badge ${getDenomClass(item.denomination)}">
+                                ${item.denomination}
+                            </span>
+                        `;
+                    }
+                }
+                
+                breakdownHTML += `
+                    <div class="breakdown-item" style="border-left-color: ${DENOM_COLORS[item.denomination]};">
+                        <div class="denom">
+                            ${denomDisplay}
+                        </div>
+                        <div class="value">
+                            ${formatCurrency(item.value, currency)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            variantDiv.innerHTML = `
+                <div class="variant-header">
+                    <div class="variant-type">
+                        <i class="fas fa-${isIdeal ? 'cubes' : 'layer-group'}"></i>
+                        ${variantTypeText}
+                        <i class="fas fa-eye" style="margin-left: 8px; opacity: 0.7; font-size: 0.8em;"></i>
+                    </div>
+                    <div class="variant-total">
+                        ${formatCurrency(variant.total_value, currency)}
+                    </div>
+                </div>
+                <div class="breakdown">
+                    ${breakdownHTML}
+                </div>
+            `;
+            
+            container.appendChild(variantDiv);
         }
 
         // Display results
@@ -2572,34 +2945,100 @@
             updateDisplayOrderButtons();
         }
 
-        // Calculate function (main logic)
-        function calculate(amount, currency, stock, maxVariants) {
-            try {
-                // Validate inputs
-                if (amount <= 0) {
-                    throw new Error('Amount must be positive');
+        // Form submission handler
+        document.getElementById('calculatorForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Check if we need to stop calculation
+            if (isCalculating) {
+                // Terminate worker immediately
+                if (calculationWorker) {
+                    calculationWorker.terminate();
+                    calculationWorker = null;
                 }
                 
-                if (!CURRENCIES[currency]) {
-                    throw new Error(`Currency ${currency} not supported`);
+                // Reset state
+                isCalculating = false;
+                stopCalculationRequested = true;
+                
+                // Reset button
+                const calculateBtn = document.getElementById('calculateBtn');
+                calculateBtn.classList.remove('stop-btn');
+                calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
+                
+                // Update results to show stopped state
+                const resultsDiv = document.getElementById('results');
+                const statusDiv = resultsDiv.querySelector('.success, .error');
+                if (statusDiv) {
+                    const variantCounter = document.getElementById('variantCounter');
+                    const variantText = variantCounter ? variantCounter.textContent : t('foundVariants', {count: 0});
+                    
+                    statusDiv.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>${t('calculationStopped')}</strong> 
+                        ${variantText}
+                    `;
+                    statusDiv.className = 'error';
                 }
                 
-                // Convert stock data
-                const bundlesStock = {};
-                if (stock) {
-                    Object.keys(stock).forEach(denomStr => {
-                        const denom = parseInt(denomStr);
-                        const qty = parseInt(stock[denomStr]);
-                        if (!isNaN(qty)) {
-                            bundlesStock[denom] = qty;
-                        }
-                    });
+                // Mark results as stopped
+                if (lastResults) {
+                    lastResults.stopped = true;
                 }
                 
+                return;
+            }
+            
+            // Reset flags
+            stopCalculationRequested = false;
+            isCalculating = true;
+            
+            const amount = parseInt(document.getElementById('amount').value);
+            const maxVariants = parseInt(document.getElementById('maxVariants').value);
+            
+            // Collect stock data for current currency only, excluding disabled denominations
+            const stock = {};
+            document.querySelectorAll(`#stockMultiCurrency input[type="number"][data-currency="${currentCurrency}"]`).forEach(input => {
+                const denom = input.dataset.denom;
+                const value = input.value;
+                
+                // Check if this denomination is enabled for current currency
+                const enabledCheckboxes = document.querySelectorAll(`#stockMultiCurrency input[type="checkbox"][data-denom="${denom}"]`);
+                let isEnabled = true; // default
+                
+                // Find the checkbox for the current currency
+                enabledCheckboxes.forEach(checkbox => {
+                    const checkboxCurrency = getCurrencyFromCheckbox(checkbox);
+                    if (checkboxCurrency === currentCurrency) {
+                        isEnabled = checkbox.checked;
+                    }
+                });
+                
+                if (isEnabled && value !== '') {
+                    // Convert bills to bundles if in bills mode
+                    if (stockMode === 'bills') {
+                        stock[denom] = Math.floor(parseInt(value) / BUNDLE_SIZE);
+                    } else {
+                        stock[denom] = value;
+                    }
+                } else if (!isEnabled) {
+                    stock[denom] = 0;
+                }
+            });
+            
+            // Save stock data
+            saveStockData();
+            
+            // Prepare UI
+            const resultsDiv = document.getElementById('results');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const displayOrderSwitch = document.getElementById('displayOrderSwitch');
+            
+            // Initialize result structure
                 const result = {
                     success: true,
                     amount: amount,
-                    currency: currency,
+                currency: currentCurrency,
                     bundle_size: BUNDLE_SIZE,
                     block_size: BLOCK_SIZE,
                     has_ideal: false,
@@ -2608,18 +3047,85 @@
                     variants: []
                 };
                 
-                const denoms = [...CURRENCIES[currency]].sort((a, b) => b - a);
+            // Clear last results
+            lastResults = null;
+            
+            // Show initial loading state
+            displayOrderSwitch.style.display = 'none';
+            resultsDiv.innerHTML = `
+                <div class="success">
+                    <i class="fas fa-search"></i>
+                    <strong>${t('calculating')}</strong> 
+                    <span id="variantCounter">${t('foundVariants', {count: 0})}</span>
+                </div>
+                <div id="progressiveResults"></div>
+            `;
+            
+            // Change button to Stop
+            calculateBtn.classList.add('stop-btn');
+            calculateBtn.innerHTML = `<i class="fas fa-stop"></i> ${t('stopCalculation')}`;
+            
+            // Get references
+            const progressiveResultsDiv = document.getElementById('progressiveResults');
+            const variantCounter = document.getElementById('variantCounter');
+            const denoms = [...CURRENCIES[currentCurrency]].sort((a, b) => b - a);
+            
+            // Validate inputs
+            if (amount <= 0) {
+                displayResults({error: 'Amount must be positive'});
+                isCalculating = false;
+                calculateBtn.classList.remove('stop-btn');
+                calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
+                return;
+            }
+            
+            if (!CURRENCIES[currentCurrency]) {
+                displayResults({error: `Currency ${currentCurrency} not supported`});
+                isCalculating = false;
+                calculateBtn.classList.remove('stop-btn');
+                calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
+                return;
+            }
+            
+            // Convert stock data
+            const bundlesStock = {};
+            if (stock) {
+                Object.keys(stock).forEach(denomStr => {
+                    const denom = parseInt(denomStr);
+                    const qty = parseInt(stock[denomStr]);
+                    if (!isNaN(qty)) {
+                        bundlesStock[denom] = qty;
+                    }
+                });
+            }
+            
+            // Create and configure worker
+            calculationWorker = createWorker();
+            
+            // Handle worker messages
+            calculationWorker.onmessage = function(e) {
+                const { type, data } = e.data;
                 
-                // Try ideal blocks first (only if amount is divisible by bundle size)
-                if (amount % BUNDLE_SIZE === 0) {
-                    const idealVariants = findIdealBlockVariants(
-                        amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
-                    );
-                
-                if (idealVariants.length > 0) {
-                        result.has_ideal = true;
-                    idealVariants.forEach(([blocks, bundleCounts]) => {
-                        const variant = {
+                if (type === 'solution') {
+                    // Check if we already have enough variants
+                    if (result.variants.length >= maxVariants) {
+                        // Stop worker - we have enough
+                        if (calculationWorker) {
+                            calculationWorker.terminate();
+                            calculationWorker = null;
+                            isCalculating = false;
+                        }
+                        return;
+                    }
+                    
+                    // Process solution and render immediately
+                    const { solution, variantType } = data;
+                    
+                    // Convert raw solution to variant
+                    let variant;
+                    if (variantType === 'ideal') {
+                        const [blocks, bundleCounts] = solution;
+                        variant = {
                             type: 'ideal',
                             blocks: blocks,
                             total_bundles: blocks * BLOCK_SIZE,
@@ -2640,21 +3146,11 @@
                                 });
                             }
                         });
-                        
                         variant.total_value = totalValue;
-                        result.variants.push(variant);
-                    });
-                } else {
-                    // Try loose bundles fallback
-                    const looseVariants = findLooseBundleVariants(
-                        amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
-                    );
-                    
-                    if (looseVariants.length > 0) {
-                            result.has_loose = true;
-                        looseVariants.forEach(bundleCounts => {
+                    } else if (variantType === 'loose') {
+                        const bundleCounts = solution;
                             const totalBundles = bundleCounts.reduce((sum, c) => sum + c, 0);
-                            const variant = {
+                        variant = {
                                 type: 'loose',
                                 blocks: Math.ceil(totalBundles / BLOCK_SIZE),
                                 total_bundles: totalBundles,
@@ -2675,24 +3171,10 @@
                                     });
                                 }
                             });
-                            
                             variant.total_value = totalValue;
-                                result.variants.push(variant);
-                            });
-                        }
-                    }
-                }
-                
-                // If no ideal or loose variants found, try partial bundles
-                if (result.variants.length === 0) {
-                    const partialVariants = findPartialBundleVariants(
-                        amount, currency, maxVariants, Object.keys(bundlesStock).length > 0 ? bundlesStock : null
-                    );
-                    
-                    if (partialVariants.length > 0) {
-                        result.has_partial = true;
-                        partialVariants.forEach(billCounts => {
-                            const variant = {
+                    } else if (variantType === 'partial') {
+                        const billCounts = solution;
+                        variant = {
                                 type: 'partial',
                                 blocks: 0,
                                 total_bundles: 0,
@@ -2737,92 +3219,195 @@
                             variant.total_value = totalValue;
                             variant.total_bundles = totalBundles;
                             variant.blocks = Math.ceil(totalBundles / BLOCK_SIZE);
+                    }
+                    
+                    // Add to results
                             result.variants.push(variant);
-                        });
-                    } else {
-                        throw new Error('Cannot fulfill order with given stock');
+                    
+                    // Update counter
+                    variantCounter.textContent = t('foundVariants', {count: result.variants.length});
+                    
+                    // Render immediately (no RAF needed - worker is async!)
+                    renderVariant(progressiveResultsDiv, variant, result.currency);
+                    
+                    // Check if we've reached the limit after adding this variant
+                    if (result.variants.length >= maxVariants) {
+                        // Stop worker - we have enough
+                        if (calculationWorker) {
+                            calculationWorker.terminate();
+                            calculationWorker = null;
+                            isCalculating = false;
+                            
+                            // Update UI to show we've reached the limit
+                            result.has_ideal = result.variants.some(v => v.type === 'ideal');
+                            result.has_loose = result.variants.some(v => v.type === 'loose');
+                            result.has_partial = result.variants.some(v => v.type === 'partial');
+                            
+                            // Store results
+                            lastResults = result;
+                            
+                            // Show display order switch
+                            displayOrderSwitch.style.display = 'flex';
+                            
+                            // Update final status message
+                            const statusDiv = resultsDiv.querySelector('.success, .error');
+                            if (statusDiv) {
+                                if (result.has_ideal) {
+                                    statusDiv.innerHTML = `
+                                        <i class="fas fa-check-circle"></i>
+                                        <strong>${t('idealBlocksFound')}</strong> 
+                                        ${t('idealBlocksDesc', {blockSize: result.block_size, bundleSize: result.bundle_size})}
+                                        <br>
+                                        ${variantCounter.textContent}
+                                    `;
+                                    statusDiv.className = 'success';
+                                } else if (result.has_loose) {
+                                    statusDiv.innerHTML = `
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <strong>${t('idealBlocksNotAvailable')}</strong> 
+                                        ${t('looseBundlesDesc')}
+                                        <br>
+                                        ${variantCounter.textContent}
+                                    `;
+                                    statusDiv.className = 'error';
+                                } else if (result.has_partial) {
+                                    statusDiv.innerHTML = `
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <strong>${t('partialBundlesFound')}</strong> 
+                                        ${t('partialBundlesDesc')}
+                                        <br>
+                                        ${variantCounter.textContent}
+                                    `;
+                                    statusDiv.className = 'error';
+                                }
+                            }
+                            
+                            // Update display order buttons
+                            updateDisplayOrderButtons();
+                            
+                            // Reset button
+                            calculateBtn.classList.remove('stop-btn');
+                            calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
+                        }
+                    }
+                    
+                } else if (type === 'complete') {
+                    // Calculation finished
+                    const { hasIdeal, hasLoose, hasPartial, stopped } = data;
+                    
+                    // If worker was already terminated (due to maxVariants limit), ignore this message
+                    if (!calculationWorker && !isCalculating) {
+                        return;
+                    }
+                    
+                    result.has_ideal = hasIdeal;
+                    result.has_loose = hasLoose;
+                    result.has_partial = hasPartial;
+                    result.stopped = stopped;
+                    
+                    // Store and display final results
+                    lastResults = result;
+                    
+                    // Show display order switch
+                    displayOrderSwitch.style.display = 'flex';
+                    
+                    // Update final status message
+                    const statusDiv = resultsDiv.querySelector('.success, .error');
+                    if (statusDiv) {
+                        if (result.stopped) {
+                            statusDiv.innerHTML = `
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>${t('calculationStopped')}</strong> 
+                                ${variantCounter.textContent}
+                            `;
+                            statusDiv.className = 'error';
+                        } else if (result.has_ideal) {
+                            statusDiv.innerHTML = `
+                                <i class="fas fa-check-circle"></i>
+                                <strong>${t('idealBlocksFound')}</strong> 
+                                ${t('idealBlocksDesc', {blockSize: result.block_size, bundleSize: result.bundle_size})}
+                                <br>
+                                ${variantCounter.textContent}
+                            `;
+                            statusDiv.className = 'success';
+                        } else if (result.has_loose) {
+                            statusDiv.innerHTML = `
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>${t('idealBlocksNotAvailable')}</strong> 
+                                ${t('looseBundlesDesc')}
+                                <br>
+                                ${variantCounter.textContent}
+                            `;
+                            statusDiv.className = 'error';
+                        } else if (result.has_partial) {
+                            statusDiv.innerHTML = `
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>${t('partialBundlesFound')}</strong> 
+                                ${t('partialBundlesDesc')}
+                                <br>
+                                ${variantCounter.textContent}
+                            `;
+                            statusDiv.className = 'error';
+                        }
+                    }
+                    
+                    // Update display order buttons
+                    updateDisplayOrderButtons();
+                    
+                    // Reset button
+                    isCalculating = false;
+                    stopCalculationRequested = false;
+                    calculateBtn.classList.remove('stop-btn');
+                    calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
+                    
+                    // Terminate worker
+                    calculationWorker.terminate();
+                    calculationWorker = null;
+                    
+                } else if (type === 'error') {
+                    // Handle error
+                    displayResults({error: data.message});
+                    
+                    // Reset button
+                    isCalculating = false;
+                    stopCalculationRequested = false;
+                    calculateBtn.classList.remove('stop-btn');
+                    calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
+                    
+                    // Terminate worker
+                    if (calculationWorker) {
+                        calculationWorker.terminate();
+                        calculationWorker = null;
                     }
                 }
-                
-                return result;
-                
-            } catch (error) {
-                return { error: error.message };
-            }
-        }
-
-        // Form submission handler
-        document.getElementById('calculatorForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+            };
             
-            const amount = parseInt(document.getElementById('amount').value);
-            const maxVariants = parseInt(document.getElementById('maxVariants').value);
+            // Handle worker errors
+            calculationWorker.onerror = function(error) {
+                displayResults({error: 'Calculation error: ' + error.message});
+                
+                // Reset button
+                isCalculating = false;
+                stopCalculationRequested = false;
+                calculateBtn.classList.remove('stop-btn');
+                    calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
+                
+                if (calculationWorker) {
+                    calculationWorker.terminate();
+                    calculationWorker = null;
+                }
+            };
             
-            // Collect stock data for current currency only, excluding disabled denominations
-            const stock = {};
-            document.querySelectorAll(`#stockMultiCurrency input[type="number"][data-currency="${currentCurrency}"]`).forEach(input => {
-                const denom = input.dataset.denom;
-                const value = input.value;
-                
-                // Check if this denomination is enabled for current currency
-                const enabledCheckboxes = document.querySelectorAll(`#stockMultiCurrency input[type="checkbox"][data-denom="${denom}"]`);
-                let isEnabled = true; // default
-                
-                // Find the checkbox for the current currency
-                enabledCheckboxes.forEach(checkbox => {
-                    const checkboxCurrency = getCurrencyFromCheckbox(checkbox);
-                    if (checkboxCurrency === currentCurrency) {
-                        isEnabled = checkbox.checked;
-                    }
-                });
-                
-                if (isEnabled && value !== '') {
-                    // Convert bills to bundles if in bills mode
-                    if (stockMode === 'bills') {
-                        // Convert individual bills to equivalent bundles (with fractional support)
-                        stock[denom] = Math.floor(parseInt(value) / BUNDLE_SIZE);
-                    } else {
-                        // Already in bundles
-                    stock[denom] = value;
-                    }
-                } else if (!isEnabled) {
-                    // Explicitly set to 0 for disabled denominations
-                    stock[denom] = 0;
+            // Start calculation in worker
+            calculationWorker.postMessage({
+                type: 'start',
+                data: {
+                    amount: amount,
+                    currencyCode: currentCurrency,
+                    maxVariants: maxVariants,
+                    bundlesStock: Object.keys(bundlesStock).length > 0 ? bundlesStock : null
                 }
             });
-            
-            // Save stock data
-            saveStockData();
-            
-            // Clear last results when starting new calculation
-            lastResults = null;
-            
-            // Show loading
-            const resultsDiv = document.getElementById('results');
-            const calculateBtn = document.getElementById('calculateBtn');
-            
-            resultsDiv.innerHTML = `
-                <div class="loading" style="display: block;">
-                    <i class="fas fa-spinner"></i>
-                    <p>${t('calculating')}</p>
-                </div>
-            `;
-            
-            calculateBtn.disabled = true;
-            calculateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('calculating')}`;
-            
-            // Simulate async processing
-            setTimeout(() => {
-                try {
-                    const data = calculate(amount, currentCurrency, stock, maxVariants);
-                    displayResults(data);
-                } catch (error) {
-                    displayResults({error: error.message});
-                } finally {
-                    calculateBtn.disabled = false;
-                    calculateBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('calculateBtn')}`;
-                }
-            }, 100);
         });
 
         // Language switcher event handlers
@@ -2833,6 +3418,10 @@
                 saveSettings();
                 // Re-render stock inputs with new language but preserve stock mode
                 updateStockInputs();
+                // Re-render results if they exist
+                if (lastResults) {
+                    displayResults(lastResults);
+                }
             });
         });
 
@@ -2862,6 +3451,20 @@
                 stockMode = btn.dataset.mode;
                 updateStockInputs();
                 saveSettings();
+            }
+            // Denomination order buttons
+            else if (e.target.closest('#denominationOrderSwitch .order-btn')) {
+                const btn = e.target.closest('#denominationOrderSwitch .order-btn');
+                
+                // Save current data before switching
+                saveStockData();
+                
+                // Switch order
+                denominationOrder = btn.dataset.order;
+                updateDenominationOrderButtons();
+                saveSettings();
+                createMultiCurrencyTable();
+                loadStockData(); // Reload data after recreating table
             }
         });
 
@@ -3501,8 +4104,7 @@
                 
                 if (numBlocks > 1) {
                     const blockLabel = document.createElement('div');
-                    blockLabel.className = 'block-title';
-                    blockLabel.style.fontSize = '1.2rem';
+                    blockLabel.className = 'block-item-title';
                     const blockValue = calculateBlockValue(variant, blockNum);
                     blockLabel.textContent = `${blockNum + 1}. ${formatCurrency(blockValue, lastResults.currency)}`;
                     blockContainer.appendChild(blockLabel);
@@ -3721,6 +4323,7 @@
         updateCurrencyBackground();
         updateDisplayOrderButtons();
         updateStockModeButtons(); 
+        updateDenominationOrderButtons();
         updateStockInputs();
     </script>
 </body>
