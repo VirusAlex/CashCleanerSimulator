@@ -1343,16 +1343,46 @@
             padding: 8px 12px;
             border-radius: 8px;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 500;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            width: 155px;
         }
 
         .github-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .steam-link {
+            position: absolute;
+            top: 115px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 155px;
+        }
+
+        .steam-link:hover {
             background: rgba(255, 255, 255, 0.3);
             border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-1px);
@@ -1465,6 +1495,12 @@
         <a href="https://github.com/VirusAlex/CashCleanerSimulator" class="github-link" target="_blank" rel="noopener">
             <i class="fab fa-github"></i>
             <span data-i18n="viewOnGitHub">View on GitHub</span>
+        </a>
+
+        <!-- Steam Guide Link -->
+        <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3509702626" class="steam-link" target="_blank" rel="noopener">
+            <i class="fab fa-steam"></i>
+            <span data-i18n="viewOnSteam">View on Steam</span>
         </a>
 
         <div class="header">
@@ -1673,6 +1709,7 @@
                 foundVariants: 'Found {count} variants',
                 bundlesText: 'bundles',
                 viewOnGitHub: 'View on GitHub',
+                viewOnSteam: 'View on Steam',
                 blockVisualization: 'Block Visualization',
                 executeOrder: 'Execute Order',
                 orderExecuted: 'Order executed successfully!',
@@ -1721,7 +1758,8 @@
                 calculationStopped: 'Расчет остановлен пользователем',
                 foundVariants: 'Найдено вариантов: {count}',
                 bundlesText: 'пачек',
-                viewOnGitHub: 'Посмотреть на GitHub',
+                viewOnGitHub: 'GitHub',
+                viewOnSteam: 'Steam',
                 blockVisualization: 'Визуализация блока',
                 executeOrder: 'Выполнить заказ',
                 orderExecuted: 'Заказ успешно выполнен!',
