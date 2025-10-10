@@ -2270,7 +2270,8 @@
                     step = Math.max(1, Math.floor(maxForD / 100));
                 }
                 
-                for (let b = 0; b <= maxForD; b += step) {
+                // Start from maximum and go down to prioritize larger denominations
+                for (let b = maxForD; b >= 0; b -= step) {
                     if (stopRequested || 
                         Date.now() - context.startTime > context.maxTime || 
                         solutions.length >= context.maxSolutions) {
@@ -2280,10 +2281,10 @@
                     searchBundles(denoms, i + 1, valueLeft - d * b, cur, solutions, stock, context);
                 }
                 
-                // Always try the maximum value
+                // Always try the minimum value (0)
                 if (step > 1 && maxForD % step !== 0) {
-                    cur[i] = maxForD;
-                    searchBundles(denoms, i + 1, valueLeft - d * maxForD, cur, solutions, stock, context);
+                    cur[i] = 0;
+                    searchBundles(denoms, i + 1, valueLeft, cur, solutions, stock, context);
                 }
                 
             cur[i] = 0;
@@ -2341,7 +2342,7 @@
                 }
 
                 const d = denoms[i];
-                const theoreticalMax = Math.ceil(billsLeft / d);
+                const theoreticalMax = Math.floor(billsLeft / d);
                 const stockMax = stock[d] === INFINITY ? theoreticalMax : stock[d] * BUNDLE_SIZE;
                 const maxForD = Math.min(stockMax, theoreticalMax);
                 
@@ -2352,7 +2353,8 @@
                     step = Math.max(1, Math.floor(maxForD / 100));
                 }
                 
-                for (let bills = 0; bills <= maxForD; bills += step) {
+                // Start from maximum and go down to prioritize larger denominations
+                for (let bills = maxForD; bills >= 0; bills -= step) {
                     if (stopRequested || 
                         Date.now() - startTime > maxTime || 
                         solutions.length >= maxSolutions) {
@@ -2362,10 +2364,10 @@
                     searchWithTimeout(denoms, i + 1, billsLeft - d * bills, cur, solutions, stock, startTime, maxTime, maxSolutions);
                 }
                 
-                // Always try the maximum value
+                // Always try the minimum value (0)
                 if (step > 1 && maxForD % step !== 0) {
-                    cur[i] = maxForD;
-                    searchWithTimeout(denoms, i + 1, billsLeft - d * maxForD, cur, solutions, stock, startTime, maxTime, maxSolutions);
+                    cur[i] = 0;
+                    searchWithTimeout(denoms, i + 1, billsLeft, cur, solutions, stock, startTime, maxTime, maxSolutions);
                 }
                 
                 cur[i] = 0;
