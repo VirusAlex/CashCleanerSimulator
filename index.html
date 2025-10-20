@@ -2464,19 +2464,21 @@
             ));
             
                                 foundIdeal = true;
-                            } else if (!stopRequested) {
-                                // Try loose bundles
-                                const looseVariants = enumerateLooseConfigs(amount, denoms, stock);
-                                
-                                if (looseVariants.length > 0) {
-                                    // Sort and send best variants
-                                    looseVariants.sort((a, b) => compareScores(
+                            }
+                        }
+                        
+                        // Try loose bundles if no ideal found and amount is divisible by bundle size
+                        if (!foundIdeal && amount % BUNDLE_SIZE === 0 && !stopRequested) {
+                            const looseVariants = enumerateLooseConfigs(amount, denoms, stock);
+                            
+                            if (looseVariants.length > 0) {
+                                // Sort and send best variants
+                                looseVariants.sort((a, b) => compareScores(
                 scoreLoose(a, denomsSorted),
                 scoreLoose(b, denomsSorted)
             ));
             
-                                    foundLoose = true;
-                                }
+                                foundLoose = true;
                             }
                         }
                         
