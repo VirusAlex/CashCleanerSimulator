@@ -2451,9 +2451,9 @@
                         let foundLoose = false;
                         let foundPartial = false;
                         
-                        // Try ideal blocks first - only possible if amount is divisible by full block value
-                        // FULL_BLOCK_VALUE = BUNDLE_SIZE * BLOCK_SIZE = 100 * 30 = 3000
-                        if (amount % FULL_BLOCK_VALUE === 0 && !stopRequested) {
+                        // Try ideal blocks first - only possible if amount is divisible by bundle size
+                        // Each block contains BLOCK_SIZE (30) bundles, but different blocks can use different denominations
+                        if (amount % BUNDLE_SIZE === 0 && !stopRequested) {
                             const idealVariants = enumerateIdealConfigs(amount, denoms, stock);
                             
                             if (idealVariants.length > 0) {
