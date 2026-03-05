@@ -12,13 +12,10 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     
     /* Denomination colors */
-    --denom-100: #fbbf24;  /* yellow */
-    --denom-50: #f97316;   /* orange */
-    --denom-20: #3b82f6;   /* blue */
-    --denom-10: #10b981;   /* green */
-    --denom-10000: #fbbf24; /* yellow (JPY) */
-    --denom-5000: #f97316;  /* orange (JPY) */
-    --denom-1000: #10b981;  /* green (JPY) */
+    --denom-yellow: #fbbf24;
+    --denom-orange: #f97316;
+    --denom-blue: #3b82f6;
+    --denom-green: #10b981;
 }
 
 * {
@@ -37,6 +34,7 @@ body {
     padding: 20px;
     color: var(--text-primary);
     transition: background-image 0.5s ease-in-out;
+    background-color: black;
 }
 
 /* Currency-specific backgrounds */
@@ -45,6 +43,7 @@ body.currency-usd {
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
+    background-color: black;
 }
 
 body.currency-eur {
@@ -52,6 +51,7 @@ body.currency-eur {
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
+    background-color: black;
 }
 
 body.currency-jpy {
@@ -59,6 +59,15 @@ body.currency-jpy {
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
+    background-color: black;
+}
+
+body.currency-gbp {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../gbp.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
 }
 
 .container {
@@ -741,13 +750,10 @@ body.currency-jpy {
 }
 
 /* Denomination colors */
-.denom-100 { background-color: var(--denom-100); }
-.denom-50 { background-color: var(--denom-50); }
-.denom-20 { background-color: var(--denom-20); }
-.denom-10 { background-color: var(--denom-10); }
-.denom-10000 { background-color: var(--denom-10000); }
-.denom-5000 { background-color: var(--denom-5000); }
-.denom-1000 { background-color: var(--denom-1000); }
+.denom-yellow { background-color: var(--denom-yellow); }
+.denom-orange { background-color: var(--denom-orange); }
+.denom-blue { background-color: var(--denom-blue); }
+.denom-green { background-color: var(--denom-green); }
 
 /* Language switcher */
 .language-switcher {

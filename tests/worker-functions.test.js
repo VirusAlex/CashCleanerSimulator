@@ -598,6 +598,27 @@ describe('self.onmessage integration', () => {
         expect(w.getStopRequested()).toBe(true);
     });
 
+    it('GBP start message → receive solutions + complete', () => {
+        postMessageMock.mockClear();
+
+        w.triggerMessage({
+            type: 'start',
+            data: {
+                amount: 150000,
+                currencyCode: 'GBP',
+                maxVariants: 10,
+                bundlesStock: undefined,
+            },
+        });
+
+        const messages = postMessageMock.mock.calls.map(c => c[0]);
+        const solutions = messages.filter(m => m.type === 'solution');
+        const complete = messages.filter(m => m.type === 'complete');
+
+        expect(solutions.length).toBeGreaterThan(0);
+        expect(complete.length).toBe(1);
+    });
+
     it('maxVariants limits number of solutions from worker', () => {
         postMessageMock.mockClear();
 
@@ -793,6 +814,56 @@ describe('GCD optimization', () => {
         expect(elapsed).toBeLessThan(50);
     });
 
+    // --- GBP GCD edge cases ---
+    it('GBP: ideal returns [] when units not divisible by GCD=5', () => {
+        const GBP = [50, 20, 10, 5];
+        const stock = {};
+        GBP.forEach(d => stock[d] = 1e9);
+        // £30,300 → units = 30300/100 = 303, 303%5=3 → impossible
+        const results = w.enumerateIdealConfigs(30300, GBP, stock);
+        expect(results).toEqual([]);
+    });
+
+    it('GBP: loose returns [] when units not divisible by GCD=5', () => {
+        const GBP = [50, 20, 10, 5];
+        const stock = {};
+        GBP.forEach(d => stock[d] = 1e9);
+        const results = w.enumerateLooseConfigs(30300, GBP, stock);
+        expect(results).toEqual([]);
+    });
+
+    it('GBP: partial returns [] when amount not divisible by GCD=5 (e.g. £3)', () => {
+        const GBP = [50, 20, 10, 5];
+        const stock = {};
+        GBP.forEach(d => stock[d] = 1e9);
+        expect(w.enumeratePartialConfigs(3, GBP, stock)).toEqual([]);
+    });
+
+    it('GBP: partial finds solutions when amount divisible by GCD=5 (£30,300 is not, use £30,500)', () => {
+        const GBP = [50, 20, 10, 5];
+        const stock = {};
+        GBP.forEach(d => stock[d] = 1e9);
+        // 30500 % 5 = 0, so partial should find solutions
+        const results = w.enumeratePartialConfigs(30500, GBP, stock, 10);
+        expect(results.length).toBeGreaterThan(0);
+        const denomsSorted = [...GBP].sort((a, b) => b - a);
+        for (const billCounts of results) {
+            const total = billCounts.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
+            expect(total).toBe(30500);
+        }
+    });
+
+    it('GBP: ideal/loose return [] instantly for impossible amounts', () => {
+        const GBP = [50, 20, 10, 5];
+        const stock = {};
+        GBP.forEach(d => stock[d] = 1e9);
+        const start = Date.now();
+        w.enumerateIdealConfigs(30300, GBP, stock);
+        w.enumerateLooseConfigs(30300, GBP, stock);
+        const elapsed = Date.now() - start;
+        expect(elapsed).toBeLessThan(50);
+    });
+
     it('onmessage for $6,530,500 USD completes fast', () => {
         postMessageMock.mockClear();
 
@@ -837,12 +908,14 @@ describe('constants', () => {
         expect(w.FULL_BLOCK_VALUE).toBe(3000);
     });
 
-    it('CURRENCIES has USD, EUR, JPY', () => {
+    it('CURRENCIES has USD, EUR, JPY, GBP', () => {
         expect(w.CURRENCIES).toHaveProperty('USD');
         expect(w.CURRENCIES).toHaveProperty('EUR');
         expect(w.CURRENCIES).toHaveProperty('JPY');
+        expect(w.CURRENCIES).toHaveProperty('GBP');
         expect(w.CURRENCIES.USD).toEqual([100, 50, 20, 10]);
         expect(w.CURRENCIES.EUR).toEqual([100, 50, 20]);
         expect(w.CURRENCIES.JPY).toEqual([10000, 5000, 1000]);
+        expect(w.CURRENCIES.GBP).toEqual([50, 20, 10, 5]);
     });
 });

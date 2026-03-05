@@ -9,26 +9,30 @@ const INFINITY = 1000000000;
 const CURRENCIES = {
     'USD': [100, 50, 20, 10],
     'EUR': [100, 50, 20],
-    'JPY': [10000, 5000, 1000]
+    'JPY': [10000, 5000, 1000],
+    'GBP': [50, 20, 10, 5]
 };
 
 // Currency symbols
 const CURRENCY_SYMBOLS = {
     'USD': '$',
     'EUR': '€',
-    'JPY': '¥'
+    'JPY': '¥',
+    'GBP': '£'
 };
 
-// Denomination colors
+// Denomination colors (per currency)
 const DENOM_COLORS = {
-    100: '#fbbf24',
-    50: '#f97316',
-    20: '#3b82f6',
-    10: '#10b981',
-    10000: '#fbbf24',
-    5000: '#f97316',
-    1000: '#10b981'
+    'USD': { 100: '#fbbf24', 50: '#f97316', 20: '#3b82f6', 10: '#10b981' },
+    'EUR': { 100: '#fbbf24', 50: '#f97316', 20: '#3b82f6' },
+    'JPY': { 10000: '#fbbf24', 5000: '#f97316', 1000: '#10b981' },
+    'GBP': { 50: '#fbbf24', 20: '#f97316', 10: '#3b82f6', 5: '#10b981' }
 };
+
+function getDenomColor(denom, currency) {
+    const colors = DENOM_COLORS[currency || currentCurrency];
+    return (colors && colors[denom]) || '#64748b';
+}
 
 // Internationalization
 
@@ -408,14 +412,15 @@ function createMultiCurrencyTable() {
     tablesContainer.className = 'stock-tables-container';
     
     // Create tables for each currency
-    ['USD', 'EUR', 'JPY'].forEach(currency => {
+    ['USD', 'EUR', 'JPY', 'GBP'].forEach(currency => {
         const tableWrapper = document.createElement('div');
         tableWrapper.className = 'stock-table-wrapper';
         
         // Currency header
         const currencyHeader = document.createElement('div');
         currencyHeader.className = 'currency-header';
-        const flag = currency === 'USD' ? '🇺🇸' : currency === 'EUR' ? '🇪🇺' : '🇯🇵';
+        const flagMap = { 'USD': '🇺🇸', 'EUR': '🇪🇺', 'JPY': '🇯🇵', 'GBP': '🇬🇧' };
+        const flag = flagMap[currency] || '🏳️';
         currencyHeader.innerHTML = `${flag} ${CURRENCY_SYMBOLS[currency]} ${currency}`;
         
         // Create table container
@@ -463,7 +468,7 @@ function createMultiCurrencyTable() {
             // Denomination cell with badge
             const denomCell = document.createElement('td');
             denomCell.innerHTML = `
-                <div class="denom-label" style="background-color: ${DENOM_COLORS[denom] || '#64748b'};">
+                <div class="denom-label" style="background-color: ${getDenomColor(denom, currency)};">
                     ${CURRENCY_SYMBOLS[currency]}${denom}
             </div>
         `;
@@ -522,7 +527,8 @@ function createCurrencyButtons() {
     const currencies = [
         { code: 'USD', flag: '🇺🇸' },
         { code: 'EUR', flag: '🇪🇺' },
-        { code: 'JPY', flag: '🇯🇵' }
+        { code: 'JPY', flag: '🇯🇵' },
+        { code: 'GBP', flag: '🇬🇧' }
     ];
     
     currencies.forEach(currency => {
@@ -563,8 +569,9 @@ function updateCurrencyButtons() {
     if (amountField) {
         const examples = {
             'USD': '85000',
-            'EUR': '75000', 
-            'JPY': '8500000'
+            'EUR': '75000',
+            'JPY': '8500000',
+            'GBP': '50000'
         };
         amountField.placeholder = examples[currentCurrency] || '85000';
     }
@@ -573,7 +580,7 @@ function updateCurrencyButtons() {
 // Update background based on currency
 function updateCurrencyBackground() {
     // Remove all currency classes
-    document.body.classList.remove('currency-usd', 'currency-eur', 'currency-jpy');
+    document.body.classList.remove('currency-usd', 'currency-eur', 'currency-jpy', 'currency-gbp');
     
     // Add current currency class
     document.body.classList.add(`currency-${currentCurrency.toLowerCase()}`);
@@ -598,8 +605,17 @@ function formatCurrency(amount, currency) {
 }
 
 // Get denomination color class
-function getDenomClass(denom) {
-    return `denom-${denom}`;
+const COLOR_TO_NAME = {
+    '#fbbf24': 'yellow',
+    '#f97316': 'orange',
+    '#3b82f6': 'blue',
+    '#10b981': 'green'
+};
+
+function getDenomClass(denom, currency) {
+    const hex = getDenomColor(denom, currency);
+    const name = COLOR_TO_NAME[hex];
+    return name ? `denom-${name}` : '';
 }
 
 // Render a single variant (for progressive display)
@@ -659,7 +675,7 @@ function renderVariant(container, variant, currency) {
         }
         
         breakdownHTML += `
-            <div class="breakdown-item" style="border-left-color: ${DENOM_COLORS[item.denomination]};">
+            <div class="breakdown-item" style="border-left-color: ${getDenomColor(item.denomination)};">
                 <div class="denom">
                     ${denomDisplay}
                 </div>
@@ -802,7 +818,7 @@ function displayResults(data) {
             }
             
             html += `
-                <div class="breakdown-item" style="border-left-color: ${DENOM_COLORS[item.denomination]};">
+                <div class="breakdown-item" style="border-left-color: ${getDenomColor(item.denomination)};">
                     <div class="denom">
                         ${denomDisplay}
                     </div>
@@ -1788,7 +1804,7 @@ function generateStockChangesHTML(stockChanges, currency = currentCurrency) {
     `;
     
     stockChanges.forEach(change => {
-        const color = DENOM_COLORS[change.denomination] || '#64748b';
+        const color = getDenomColor(change.denomination);
         const modeText = stockMode === 'bundles' ? 'bundles' : 'bills';
         
         html += `
@@ -2108,14 +2124,14 @@ function createBundle(bundleInfo) {
         bundle.textContent = '';
     } else if (bundleInfo.type === 'partial') {
         // Частичная пачка - диагональная заливка
-        const color = DENOM_COLORS[bundleInfo.denomination] || '#64748b';
+        const color = getDenomColor(bundleInfo.denomination);
         bundle.style.background = `linear-gradient(15deg, ${color} 50%, rgba(255,255,255,0.7) 50%)`;
         bundle.style.border = `2px solid ${color}`;
         bundle.textContent = bundleInfo.denomination;
         bundle.title = `Partial pack: ${bundleInfo.bills} bills`;
     } else {
         // Полная пачка
-        bundle.style.backgroundColor = DENOM_COLORS[bundleInfo.denomination] || '#64748b';
+        bundle.style.backgroundColor = getDenomColor(bundleInfo.denomination);
         bundle.textContent = bundleInfo.denomination;
         bundle.title = `Full pack: ${BUNDLE_SIZE} bills`;
     }
