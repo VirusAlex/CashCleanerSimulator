@@ -32,10 +32,10 @@ export function loadWorkerFunctions(postMessageFn) {
     vm.runInContext(patchedSource, context);
 
     return {
-        BUNDLE_SIZE: context.BUNDLE_SIZE,
-        BLOCK_SIZE: context.BLOCK_SIZE,
+        BUNDLE_SIZE: context.DEFAULT_BUNDLE_SIZE,
+        BLOCK_SIZE: context.DEFAULT_BLOCK_SIZE,
         INFINITY: context.INFINITY,
-        FULL_BLOCK_VALUE: context.FULL_BLOCK_VALUE,
+        FULL_BLOCK_VALUE: context.DEFAULT_BUNDLE_SIZE * context.DEFAULT_BLOCK_SIZE,
         CURRENCIES: context.CURRENCIES,
         gcd: context.gcd,
         gcdArray: context.gcdArray,

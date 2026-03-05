@@ -74,6 +74,9 @@
             const d = denoms[i];
             const maxForD = Math.min(bundlesLeft, stock[d], Math.floor(valueLeft / d));
 
+                // Precompute remaining denomination bounds for per-iteration pruning
+                const remainingDenoms = denoms.slice(i + 1);
+
                 // Smart sampling
                 const SMART_SAMPLE_THRESHOLD = 1000;
                 let step = 1;
@@ -87,21 +90,65 @@
                         solutions.length >= context.maxSolutions) {
                         break;
                     }
+
+                    // Per-iteration pruning: check remaining denoms can cover leftover
+                    const remBundles = bundlesLeft - b;
+                    const remValue = valueLeft - d * b;
+                    if (remainingDenoms.length > 0) {
+                        const minRemDenom = remainingDenoms[remainingDenoms.length - 1];
+                        const maxRemDenom = remainingDenoms[0];
+                        if (remValue < remBundles * minRemDenom || remValue > remBundles * maxRemDenom) {
+                            continue;
+                        }
+                    }
+
                 cur[i] = b;
-                    searchBlocks(denoms, blocks, i + 1, bundlesLeft - b, valueLeft - d * b, cur, solutions, stock, context);
+                    searchBlocks(denoms, blocks, i + 1, remBundles, remValue, cur, solutions, stock, context);
                 }
 
                 // Always try the maximum value (boundary condition)
                 if (step > 1 && maxForD % step !== 0) {
-                    cur[i] = maxForD;
-                    searchBlocks(denoms, blocks, i + 1, bundlesLeft - maxForD, valueLeft - d * maxForD, cur, solutions, stock, context);
+                    const remBundles = bundlesLeft - maxForD;
+                    const remValue = valueLeft - d * maxForD;
+                    if (remainingDenoms.length === 0 ||
+                        (remValue >= remBundles * remainingDenoms[remainingDenoms.length - 1] &&
+                         remValue <= remBundles * remainingDenoms[0])) {
+                        cur[i] = maxForD;
+                        searchBlocks(denoms, blocks, i + 1, remBundles, remValue, cur, solutions, stock, context);
+                    }
                 }
 
             cur[i] = 0;
         }
 
+        // Check if a target value can be expressed as a sum of exactly `count` items
+        // chosen from the given denominations (feasibility check without full DFS)
+        function isFeasibleForBlockCount(units, bundlesTotal, denomsSorted) {
+            const minDenom = denomsSorted[denomsSorted.length - 1];
+            const maxDenom = denomsSorted[0];
+
+            // Basic range check
+            if (units < bundlesTotal * minDenom || units > bundlesTotal * maxDenom) {
+                return false;
+            }
+
+            // GCD of differences check:
+            // units = Σ(denom[i] * count[i]) with Σ count[i] = bundlesTotal
+            // Substituting count[last] = bundlesTotal - Σ count[0..n-2]:
+            // units - bundlesTotal * minDenom = Σ count[i] * (denom[i] - minDenom)
+            // So (units - bundlesTotal * minDenom) must be divisible by GCD of (denom[i] - minDenom)
+            const remainder = units - bundlesTotal * minDenom;
+            if (remainder === 0) return true;
+
+            const diffs = denomsSorted.filter(d => d !== minDenom).map(d => d - minDenom);
+            if (diffs.length === 0) return false; // only one denomination and remainder != 0
+
+            const g = gcdArray(diffs);
+            return remainder % g === 0;
+        }
+
         // Enumerate ideal block configurations
-        function enumerateIdealConfigs(amount, denoms, stock, maxSolutions, bundleSize, blockSize) {
+        function enumerateIdealConfigs(amount, denoms, stock, maxSolutions, bundleSize = DEFAULT_BUNDLE_SIZE, blockSize = DEFAULT_BLOCK_SIZE) {
                 if (amount % bundleSize !== 0) {
                     return [];
                 }
@@ -146,6 +193,11 @@
                         break;
                     }
 
+                    // Skip block counts where no valid decomposition exists
+                    if (!isFeasibleForBlockCount(units, bundlesTotal, denomsSorted)) {
+                        continue;
+                    }
+
                     searchBlocks(denomsSorted, blocks, 0, bundlesTotal, units, cur, solutions, stock, context);
             }
 
@@ -183,6 +235,10 @@
             const d = denoms[i];
             const maxForD = Math.min(stock[d], Math.floor(valueLeft / d));
 
+                // Precompute GCD of remaining denominations for pruning
+                const remainingDenoms = denoms.slice(i + 1);
+                const remGcd = remainingDenoms.length > 0 ? gcdArray(remainingDenoms) : 0;
+
                 // Smart sampling
                 const SMART_SAMPLE_THRESHOLD = 1000;
                 let step = 1;
@@ -197,21 +253,31 @@
                         solutions.length >= context.maxSolutions) {
                         break;
                     }
+
+                    // Pruning: remaining value must be achievable with remaining denoms
+                    const remValue = valueLeft - d * b;
+                    if (remGcd > 0 && remValue > 0 && remValue % remGcd !== 0) {
+                        continue;
+                    }
+
                 cur[i] = b;
-                    searchBundles(denoms, i + 1, valueLeft - d * b, cur, solutions, stock, context);
+                    searchBundles(denoms, i + 1, remValue, cur, solutions, stock, context);
                 }
 
                 // Always try the minimum value (0)
                 if (step > 1 && maxForD % step !== 0) {
-                    cur[i] = 0;
-                    searchBundles(denoms, i + 1, valueLeft, cur, solutions, stock, context);
+                    // Pruning for boundary case too
+                    if (remGcd === 0 || valueLeft === 0 || valueLeft % remGcd === 0) {
+                        cur[i] = 0;
+                        searchBundles(denoms, i + 1, valueLeft, cur, solutions, stock, context);
+                    }
                 }
 
             cur[i] = 0;
         }
 
         // Enumerate loose bundle configurations
-        function enumerateLooseConfigs(amount, denoms, stock, maxSolutions, bundleSize) {
+        function enumerateLooseConfigs(amount, denoms, stock, maxSolutions, bundleSize = DEFAULT_BUNDLE_SIZE) {
                 if (amount % bundleSize !== 0) {
                     return [];
                 }
@@ -240,7 +306,7 @@
         }
 
             // Search with timeout for partial bundles
-            function searchWithTimeout(denoms, i, billsLeft, cur, solutions, stock, startTime, maxTime, maxSolutions, bundleSize) {
+            function searchWithTimeout(denoms, i, billsLeft, cur, solutions, stock, startTime, maxTime, maxSolutions, bundleSize = DEFAULT_BUNDLE_SIZE) {
                 if (stopRequested ||
                     Date.now() - startTime > maxTime ||
                     solutions.length >= maxSolutions) {
@@ -300,7 +366,7 @@
             }
 
             // Enumerate partial bundle configurations
-            function enumeratePartialConfigs(amount, denoms, stock, maxSolutions, bundleSize) {
+            function enumeratePartialConfigs(amount, denoms, stock, maxSolutions, bundleSize = DEFAULT_BUNDLE_SIZE) {
                 // Quick GCD check: amount must be divisible by GCD of denominations
                 if (amount > 0 && amount % gcdArray(denoms) !== 0) {
                     return [];
@@ -488,7 +554,7 @@ if (typeof module !== "undefined") {
     module.exports = {
         DEFAULT_BUNDLE_SIZE, DEFAULT_BLOCK_SIZE, INFINITY, CURRENCIES, COIN_CURRENCIES, COIN_SCALE,
         gcd, gcdArray,
-        searchBlocks, searchBundles, searchWithTimeout,
+        isFeasibleForBlockCount, searchBlocks, searchBundles, searchWithTimeout,
         enumerateIdealConfigs, enumerateLooseConfigs, enumeratePartialConfigs,
         scoreIdeal, scoreLoose, scorePartial,
         compareScores, normalizeStock,

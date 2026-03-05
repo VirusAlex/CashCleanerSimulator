@@ -864,6 +864,29 @@ describe('GCD optimization', () => {
         expect(elapsed).toBeLessThan(50);
     });
 
+    it('USD $4,680,000 ideal blocks: first result is 16 blocks, completes under 2s', () => {
+        const USD = [100, 50, 20, 10];
+        const stock = {};
+        USD.forEach(d => stock[d] = 1e9);
+
+        const start = Date.now();
+        const results = w.enumerateIdealConfigs(4680000, USD, stock, 10);
+        const elapsed = Date.now() - start;
+
+        expect(results.length).toBeGreaterThan(0);
+        expect(elapsed).toBeLessThan(2000);
+
+        // First result must be 16 blocks (most compact)
+        expect(results[0][0]).toBe(16);
+
+        // Verify all solutions
+        const denomsSorted = [...USD].sort((a, b) => b - a);
+        for (const [blocks, bundleCounts] of results) {
+            const totalUnits = bundleCounts.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
+            expect(totalUnits * w.BUNDLE_SIZE).toBe(4680000);
+        }
+    });
+
     it('onmessage for $6,530,500 USD completes fast', () => {
         postMessageMock.mockClear();
 
@@ -885,6 +908,180 @@ describe('GCD optimization', () => {
         expect(complete.data.hasPartial).toBe(true);
         // Should be fast now (not 10+ seconds)
         expect(elapsed).toBeLessThan(2000);
+    });
+});
+
+// ============================================================
+// Complex scenarios: ideal blocks
+// ============================================================
+describe('complex scenarios: ideal blocks', () => {
+    function unlimitedStock(denoms) {
+        const stock = {};
+        denoms.forEach(d => stock[d] = 1e9);
+        return stock;
+    }
+
+    it('USD $9,000,000 → 30 ideal blocks, pure $100', () => {
+        const USD = [100, 50, 20, 10];
+        const stock = unlimitedStock(USD);
+        const results = w.enumerateIdealConfigs(9000000, USD, stock, 10);
+        const denomsSorted = [...USD].sort((a, b) => b - a);
+
+        expect(results.length).toBeGreaterThan(0);
+        const [blocks, counts] = results[0];
+        expect(blocks).toBe(30);
+        // 100 x 900 bundles
+        expect(counts[0]).toBe(900);
+        expect(counts.slice(1).every(c => c === 0)).toBe(true);
+
+        for (const [b, bc] of results) {
+            const total = bc.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
+            expect(total * w.BUNDLE_SIZE).toBe(9000000);
+        }
+    });
+
+    it('USD $1,560,000 → 6 ideal blocks, $100 x 132 + $50 x 48', () => {
+        const USD = [100, 50, 20, 10];
+        const stock = unlimitedStock(USD);
+        const results = w.enumerateIdealConfigs(1560000, USD, stock, 10);
+
+        expect(results.length).toBeGreaterThan(0);
+        const [blocks, counts] = results[0];
+        expect(blocks).toBe(6);
+        expect(counts[0]).toBe(132); // $100 x 132
+        expect(counts[1]).toBe(48);  // $50 x 48
+    });
+
+    it('USD $7,350,000 → 25 ideal blocks, $100 x 720 + $50 x 30', () => {
+        const USD = [100, 50, 20, 10];
+        const stock = unlimitedStock(USD);
+        const results = w.enumerateIdealConfigs(7350000, USD, stock, 10);
+
+        expect(results.length).toBeGreaterThan(0);
+        const [blocks, counts] = results[0];
+        expect(blocks).toBe(25);
+        expect(counts[0]).toBe(720); // $100 x 720
+        expect(counts[1]).toBe(30);  // $50 x 30
+    });
+
+    it('EUR €2,400,000 → 8 ideal blocks, pure €100', () => {
+        const EUR = [100, 50, 20];
+        const stock = unlimitedStock(EUR);
+        const results = w.enumerateIdealConfigs(2400000, EUR, stock, 10);
+
+        expect(results.length).toBeGreaterThan(0);
+        const [blocks, counts] = results[0];
+        expect(blocks).toBe(8);
+        expect(counts[0]).toBe(240); // 100 x 240
+        expect(counts.slice(1).every(c => c === 0)).toBe(true);
+    });
+
+    it('JPY ¥90,000,000 → 3 ideal blocks, pure ¥10000', () => {
+        const JPY = [10000, 5000, 1000];
+        const stock = unlimitedStock(JPY);
+        const results = w.enumerateIdealConfigs(90000000, JPY, stock, 10);
+
+        expect(results.length).toBeGreaterThan(0);
+        const [blocks, counts] = results[0];
+        expect(blocks).toBe(3);
+        expect(counts[0]).toBe(90); // 10000 x 90
+        expect(counts.slice(1).every(c => c === 0)).toBe(true);
+    });
+
+    it('GBP £750,000 → 5 ideal blocks, pure £50', () => {
+        const GBP = [50, 20, 10, 5];
+        const stock = unlimitedStock(GBP);
+        const results = w.enumerateIdealConfigs(750000, GBP, stock, 10);
+
+        expect(results.length).toBeGreaterThan(0);
+        const [blocks, counts] = results[0];
+        expect(blocks).toBe(5);
+        expect(counts[0]).toBe(150); // 50 x 150
+        expect(counts.slice(1).every(c => c === 0)).toBe(true);
+    });
+});
+
+// ============================================================
+// Complex scenarios: partial bundles
+// ============================================================
+describe('complex scenarios: partial bundles', () => {
+    function unlimitedStock(denoms) {
+        const stock = {};
+        denoms.forEach(d => stock[d] = 1e9);
+        return stock;
+    }
+
+    it('USD $4,680,050 → partial, 100 x 46800 + 50 x 1', () => {
+        const USD = [100, 50, 20, 10];
+        const stock = unlimitedStock(USD);
+        const denomsSorted = [...USD].sort((a, b) => b - a);
+
+        // Not divisible by BUNDLE_SIZE → ideal/loose return []
+        expect(w.enumerateIdealConfigs(4680050, USD, stock, 10)).toEqual([]);
+        expect(w.enumerateLooseConfigs(4680050, USD, stock, 10)).toEqual([]);
+
+        const results = w.enumeratePartialConfigs(4680050, USD, stock, 10);
+        expect(results.length).toBeGreaterThan(0);
+
+        const first = results[0];
+        expect(first[0]).toBe(46800); // $100 x 46800 bills
+        expect(first[1]).toBe(1);     // $50 x 1 bill
+        expect(first.slice(2).every(c => c === 0)).toBe(true);
+
+        const total = first.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
+        expect(total).toBe(4680050);
+    });
+
+    it('EUR €555,550 → partial, 100 x 5555 + 50 x 1', () => {
+        const EUR = [100, 50, 20];
+        const stock = unlimitedStock(EUR);
+        const denomsSorted = [...EUR].sort((a, b) => b - a);
+
+        const results = w.enumeratePartialConfigs(555550, EUR, stock, 10);
+        expect(results.length).toBeGreaterThan(0);
+
+        const first = results[0];
+        expect(first[0]).toBe(5555); // 100 x 5555
+        expect(first[1]).toBe(1);    // 50 x 1
+
+        const total = first.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
+        expect(total).toBe(555550);
+    });
+
+    it('GBP £123,455 → partial, 50 x 2469 + 5 x 1', () => {
+        const GBP = [50, 20, 10, 5];
+        const stock = unlimitedStock(GBP);
+        const denomsSorted = [...GBP].sort((a, b) => b - a);
+
+        const results = w.enumeratePartialConfigs(123455, GBP, stock, 10);
+        expect(results.length).toBeGreaterThan(0);
+
+        const first = results[0];
+        expect(first[0]).toBe(2469); // 50 x 2469
+        expect(first[3]).toBe(1);    // 5 x 1
+
+        const total = first.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
+        expect(total).toBe(123455);
+    });
+
+    it('JPY ¥12,345,000 → partial, 10000 x 1234 + 5000 x 1', () => {
+        const JPY = [10000, 5000, 1000];
+        const stock = unlimitedStock(JPY);
+        const denomsSorted = [...JPY].sort((a, b) => b - a);
+
+        // units = 123450, 123450 % GCD(10000,5000,1000)=1000 → 450 ≠ 0 → ideal/loose fail
+        expect(w.enumerateIdealConfigs(12345000, JPY, stock, 10)).toEqual([]);
+        expect(w.enumerateLooseConfigs(12345000, JPY, stock, 10)).toEqual([]);
+
+        const results = w.enumeratePartialConfigs(12345000, JPY, stock, 10);
+        expect(results.length).toBeGreaterThan(0);
+
+        const first = results[0];
+        expect(first[0]).toBe(1234); // 10000 x 1234
+        expect(first[1]).toBe(1);    // 5000 x 1
+
+        const total = first.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
+        expect(total).toBe(12345000);
     });
 });
 
