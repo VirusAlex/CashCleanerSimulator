@@ -76,22 +76,32 @@
                                 <i class="fas fa-info-circle"></i>
                             </span>
                         </h3>
-                            <div style="display: flex; gap: 10px;">
-                            <div class="display-order-switch" id="stockModeSwitch">
-                                <button type="button" class="order-btn active" data-mode="bundles" title="Bundle Stock">
-                                    <i class="fas fa-layer-group"></i>
-                                </button>
-                                <button type="button" class="order-btn" data-mode="bills" title="Loose Bills Stock">
-                                    <i class="fas fa-money-bill"></i>
-                                </button>
+                            <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                                <div class="display-order-switch" id="assetTypeSwitch">
+                                    <button type="button" class="order-btn active" data-asset="bills">
+                                        <i class="fas fa-money-bill"></i> <span data-i18n="banknotes">Bills</span>
+                                    </button>
+                                    <button type="button" class="order-btn" data-asset="coins">
+                                        <i class="fas fa-coins"></i> <span data-i18n="coins">Coins</span>
+                                    </button>
                                 </div>
-                                <div class="display-order-switch" id="denominationOrderSwitch">
-                                    <button type="button" class="order-btn active" data-order="high-to-low" title="Large to small denominations">
-                                        <i class="fas fa-arrow-down-wide-short"></i>
-                                    </button>
-                                    <button type="button" class="order-btn" data-order="low-to-high" title="Small to large denominations">
-                                        <i class="fas fa-arrow-up-short-wide"></i>
-                                    </button>
+                                <div style="display: flex; gap: 10px;">
+                                    <div class="display-order-switch" id="stockModeSwitch">
+                                        <button type="button" class="order-btn active" data-mode="bundles" title="Bundle Stock">
+                                            <i class="fas fa-layer-group"></i>
+                                        </button>
+                                        <button type="button" class="order-btn" data-mode="bills" title="Loose Bills Stock">
+                                            <i class="fas fa-money-bill"></i>
+                                        </button>
+                                    </div>
+                                    <div class="display-order-switch" id="denominationOrderSwitch">
+                                        <button type="button" class="order-btn active" data-order="high-to-low" title="Large to small denominations">
+                                            <i class="fas fa-arrow-down-wide-short"></i>
+                                        </button>
+                                        <button type="button" class="order-btn" data-order="low-to-high" title="Small to large denominations">
+                                            <i class="fas fa-arrow-up-short-wide"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
