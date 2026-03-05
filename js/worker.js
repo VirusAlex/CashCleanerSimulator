@@ -345,19 +345,39 @@
                     step = Math.max(1, Math.floor(maxForD / 100));
                 }
 
-                // Start from maximum and go down to prioritize larger denominations
+                const tried = new Set();
+
+                // First pass: try bundle-aligned values (multiples of bundleSize) to find
+                // solutions with fewer partial-pack denominations.
+                if (step > 1) {
+                    const maxAligned = Math.floor(maxForD / bundleSize) * bundleSize;
+                    for (let bills = maxAligned; bills >= 0; bills -= bundleSize) {
+                        if (stopRequested ||
+                            Date.now() - startTime > maxTime ||
+                            solutions.length >= maxSolutions) {
+                            break;
+                        }
+                        tried.add(bills);
+                        cur[i] = bills;
+                        searchWithTimeout(denoms, i + 1, billsLeft - d * bills, cur, solutions, stock, startTime, maxTime, maxSolutions, bundleSize);
+                    }
+                }
+
+                // Second pass: sampled values (start from maximum, step down)
                 for (let bills = maxForD; bills >= 0; bills -= step) {
                     if (stopRequested ||
                         Date.now() - startTime > maxTime ||
                         solutions.length >= maxSolutions) {
                         break;
                     }
+                    if (tried.has(bills)) continue;
+                    tried.add(bills);
                     cur[i] = bills;
                     searchWithTimeout(denoms, i + 1, billsLeft - d * bills, cur, solutions, stock, startTime, maxTime, maxSolutions, bundleSize);
                 }
 
                 // Always try the minimum value (0)
-                if (step > 1 && maxForD % step !== 0) {
+                if (!tried.has(0)) {
                     cur[i] = 0;
                     searchWithTimeout(denoms, i + 1, billsLeft, cur, solutions, stock, startTime, maxTime, maxSolutions, bundleSize);
                 }
@@ -365,23 +385,107 @@
                 cur[i] = 0;
             }
 
+            // Search for partial solutions where only one denomination has a partial pack.
+            // For each "partial denom" k, all others are restricted to multiples of bundleSize.
+            function searchConstrainedPartial(denoms, amount, stock, solutions, bundleSize, maxSolutions, startTime, maxTime) {
+                const n = denoms.length;
+
+                // For each denomination k that is allowed to be partial
+                for (let k = 0; k < n; k++) {
+                    if (stopRequested || Date.now() - startTime > maxTime || solutions.length >= maxSolutions) break;
+
+                    // DFS over all denoms except k (bundle-aligned only), compute k's value from remainder
+                    const cur = new Array(n).fill(0);
+                    searchConstrainedDFS(denoms, amount, stock, solutions, bundleSize, maxSolutions, startTime, maxTime, cur, 0, k, amount);
+                }
+            }
+
+            function searchConstrainedDFS(denoms, amount, stock, solutions, bundleSize, maxSolutions, startTime, maxTime, cur, i, partialIdx, remaining) {
+                if (stopRequested || Date.now() - startTime > maxTime || solutions.length >= maxSolutions) return;
+
+                if (i === denoms.length) {
+                    // All denoms assigned — check if remaining is 0
+                    if (remaining === 0) {
+                        const solution = [...cur];
+                        solutions.push(solution);
+                        self.postMessage({ type: 'solution', data: { solution, variantType: 'partial' } });
+                    }
+                    return;
+                }
+
+                const d = denoms[i];
+                const stockBills = stock[d] === INFINITY ? INFINITY : stock[d] * bundleSize;
+
+                if (i === partialIdx) {
+                    // This is the partial denom — compute exact value needed
+                    if (remaining >= 0 && remaining % d === 0) {
+                        const needed = remaining / d;
+                        if (needed <= stockBills) {
+                            cur[i] = needed;
+                            searchConstrainedDFS(denoms, amount, stock, solutions, bundleSize, maxSolutions, startTime, maxTime, cur, i + 1, partialIdx, 0);
+                            cur[i] = 0;
+                        }
+                    }
+                    return;
+                }
+
+                // Non-partial denom: only bundle-aligned values (multiples of bundleSize)
+                const maxBills = Math.min(stockBills, Math.floor(remaining / d));
+                const maxAligned = Math.floor(maxBills / bundleSize) * bundleSize;
+
+                // Smart sampling for bundle-aligned values
+                let step = bundleSize;
+                const numSteps = maxAligned / bundleSize;
+                if (numSteps > 200) {
+                    step = Math.max(bundleSize, Math.floor(numSteps / 100) * bundleSize);
+                }
+
+                for (let bills = maxAligned; bills >= 0; bills -= step) {
+                    if (stopRequested || Date.now() - startTime > maxTime || solutions.length >= maxSolutions) break;
+                    cur[i] = bills;
+                    searchConstrainedDFS(denoms, amount, stock, solutions, bundleSize, maxSolutions, startTime, maxTime, cur, i + 1, partialIdx, remaining - d * bills);
+                }
+                // Always try 0 if not already tried
+                if (step > bundleSize && maxAligned % step !== 0) {
+                    cur[i] = 0;
+                    searchConstrainedDFS(denoms, amount, stock, solutions, bundleSize, maxSolutions, startTime, maxTime, cur, i + 1, partialIdx, remaining);
+                }
+
+                cur[i] = 0;
+            }
+
             // Enumerate partial bundle configurations
-            function enumeratePartialConfigs(amount, denoms, stock, maxSolutions, bundleSize = DEFAULT_BUNDLE_SIZE) {
+            // strategy: 'original' | 'constrained' | 'twophase'
+            function enumeratePartialConfigs(amount, denoms, stock, maxSolutions, bundleSize = DEFAULT_BUNDLE_SIZE, strategy = 'twophase') {
                 // Quick GCD check: amount must be divisible by GCD of denominations
                 if (amount > 0 && amount % gcdArray(denoms) !== 0) {
                     return [];
                 }
 
                 const startTime = Date.now();
-
                 const denomsSorted = [...denoms].sort((a, b) => b - a);
-                const cur = new Array(denomsSorted.length).fill(0);
                 const solutions = [];
 
                 const maxTime = 5000;
                 maxSolutions = maxSolutions || 1000;
 
-                searchWithTimeout(denomsSorted, 0, amount, cur, solutions, stock, startTime, maxTime, maxSolutions, bundleSize);
+                if (strategy === 'constrained') {
+                    // Only search for solutions with at most 1 partial denom
+                    searchConstrainedPartial(denomsSorted, amount, stock, solutions, bundleSize, maxSolutions, startTime, maxTime);
+                } else if (strategy === 'twophase') {
+                    // Phase 1: constrained search (1 partial denom)
+                    searchConstrainedPartial(denomsSorted, amount, stock, solutions, bundleSize, maxSolutions, startTime, maxTime);
+
+                    // Phase 2: general DFS for remaining slots
+                    if (solutions.length < maxSolutions && !stopRequested && Date.now() - startTime < maxTime) {
+                        const cur = new Array(denomsSorted.length).fill(0);
+                        searchWithTimeout(denomsSorted, 0, amount, cur, solutions, stock, startTime, maxTime, maxSolutions, bundleSize);
+                    }
+                } else {
+                    // Original: general DFS only
+                    const cur = new Array(denomsSorted.length).fill(0);
+                    searchWithTimeout(denomsSorted, 0, amount, cur, solutions, stock, startTime, maxTime, maxSolutions, bundleSize);
+                }
 
             return solutions;
         }
@@ -403,12 +507,15 @@
             return [totalBundles, kinds, -avg];
         }
 
-        function scorePartial(billCounts, denoms) {
+        function scorePartial(billCounts, denoms, bundleSize) {
             const totalBills = billCounts.reduce((sum, c) => sum + c, 0);
             const kinds = billCounts.filter(c => c > 0).length;
             const avg = totalBills > 0 ?
                 billCounts.reduce((sum, c, i) => sum + denoms[i] * c, 0) / totalBills : 0;
-            return [totalBills, kinds, -avg];
+            // Count denominations with partial (non-bundle-aligned) packs
+            const bSize = bundleSize || DEFAULT_BUNDLE_SIZE;
+            const partialDenoms = billCounts.filter(c => c > 0 && c % bSize !== 0).length;
+            return [partialDenoms, totalBills, kinds, -avg];
         }
 
         // Compare scores
@@ -516,8 +623,8 @@
 
                             if (partialVariants.length > 0) {
                                 partialVariants.sort((a, b) => compareScores(
-                scorePartial(a, denomsSorted),
-                scorePartial(b, denomsSorted)
+                scorePartial(a, denomsSorted, BUNDLE_SIZE),
+                scorePartial(b, denomsSorted, BUNDLE_SIZE)
             ));
 
                                 foundPartial = true;
@@ -555,6 +662,7 @@ if (typeof module !== "undefined") {
         DEFAULT_BUNDLE_SIZE, DEFAULT_BLOCK_SIZE, INFINITY, CURRENCIES, COIN_CURRENCIES, COIN_SCALE,
         gcd, gcdArray,
         isFeasibleForBlockCount, searchBlocks, searchBundles, searchWithTimeout,
+        searchConstrainedPartial, searchConstrainedDFS,
         enumerateIdealConfigs, enumerateLooseConfigs, enumeratePartialConfigs,
         scoreIdeal, scoreLoose, scorePartial,
         compareScores, normalizeStock,

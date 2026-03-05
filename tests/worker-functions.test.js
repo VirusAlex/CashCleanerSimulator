@@ -126,25 +126,37 @@ describe('scorePartial', () => {
     it('single denomination', () => {
         const denoms = [100, 50, 20];
         const score = w.scorePartial([10, 0, 0], denoms);
-        expect(score[0]).toBe(10);  // totalBills
-        expect(score[1]).toBe(1);   // kinds
-        expect(score[2]).toBe(-100); // -avg
+        expect(score[0]).toBe(1);    // partialDenoms (10 % 100 != 0)
+        expect(score[1]).toBe(10);   // totalBills
+        expect(score[2]).toBe(1);    // kinds
+        expect(score[3]).toBe(-100); // -avg
     });
 
     it('multiple denominations', () => {
         const denoms = [100, 50];
         const score = w.scorePartial([5, 10], denoms);
-        expect(score[0]).toBe(15);  // totalBills
-        expect(score[1]).toBe(2);   // kinds
+        expect(score[0]).toBe(2);   // partialDenoms (both 5%100!=0, 10%100!=0)
+        expect(score[1]).toBe(15);  // totalBills
+        expect(score[2]).toBe(2);   // kinds
     });
 
     it('score tuple structure', () => {
         const denoms = [100, 50, 20];
         const score = w.scorePartial([3, 2, 5], denoms);
-        expect(score).toHaveLength(3);
+        expect(score).toHaveLength(4);
         expect(typeof score[0]).toBe('number');
         expect(typeof score[1]).toBe('number');
         expect(typeof score[2]).toBe('number');
+        expect(typeof score[3]).toBe('number');
+    });
+
+    it('prefers fewer partial denominations', () => {
+        const denoms = [100, 50, 20];
+        // [200, 0, 0] = 1 partial denom (200%100=0 → 0 partials)
+        // [150, 1, 0] = 2 partial denoms (150%100!=0, 1%100!=0)
+        const scoreClean = w.scorePartial([200, 0, 0], denoms);
+        const scoreDirty = w.scorePartial([150, 1, 0], denoms);
+        expect(w.compareScores(scoreClean, scoreDirty)).toBeLessThan(0);
     });
 });
 
@@ -1032,7 +1044,7 @@ describe('complex scenarios: partial bundles', () => {
         expect(total).toBe(4680050);
     });
 
-    it('EUR €555,550 → partial, 100 x 5555 + 50 x 1', () => {
+    it('EUR €555,550 → partial, 100 x 5500 + 50 x 111 (1 partial denom)', () => {
         const EUR = [100, 50, 20];
         const stock = unlimitedStock(EUR);
         const denomsSorted = [...EUR].sort((a, b) => b - a);
@@ -1040,15 +1052,25 @@ describe('complex scenarios: partial bundles', () => {
         const results = w.enumeratePartialConfigs(555550, EUR, stock, 10);
         expect(results.length).toBeGreaterThan(0);
 
+        // Sorted by scorePartial: fewer partial denoms first
+        results.sort((a, b) => w.compareScores(
+            w.scorePartial(a, denomsSorted, w.BUNDLE_SIZE),
+            w.scorePartial(b, denomsSorted, w.BUNDLE_SIZE)
+        ));
+
         const first = results[0];
-        expect(first[0]).toBe(5555); // 100 x 5555
-        expect(first[1]).toBe(1);    // 50 x 1
+        expect(first[0]).toBe(5500); // 100 x 5500 (55 full bundles, 0 partial)
+        expect(first[1]).toBe(111);  // 50 x 111 (1 full bundle + 11 partial)
+
+        // Only 1 denomination with partial pack
+        const partialDenoms = first.filter((c) => c > 0 && c % 100 !== 0).length;
+        expect(partialDenoms).toBe(1);
 
         const total = first.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
         expect(total).toBe(555550);
     });
 
-    it('GBP £123,455 → partial, 50 x 2469 + 5 x 1', () => {
+    it('GBP £123,455 → partial, 50 x 2400 + 20 x 100 + 10 x 100 + 5 x 91 (1 partial denom)', () => {
         const GBP = [50, 20, 10, 5];
         const stock = unlimitedStock(GBP);
         const denomsSorted = [...GBP].sort((a, b) => b - a);
@@ -1056,15 +1078,26 @@ describe('complex scenarios: partial bundles', () => {
         const results = w.enumeratePartialConfigs(123455, GBP, stock, 10);
         expect(results.length).toBeGreaterThan(0);
 
+        results.sort((a, b) => w.compareScores(
+            w.scorePartial(a, denomsSorted, w.BUNDLE_SIZE),
+            w.scorePartial(b, denomsSorted, w.BUNDLE_SIZE)
+        ));
+
         const first = results[0];
-        expect(first[0]).toBe(2469); // 50 x 2469
-        expect(first[3]).toBe(1);    // 5 x 1
+        expect(first[0]).toBe(2400); // 50 x 2400 (24 full bundles)
+        expect(first[1]).toBe(100);  // 20 x 100 (1 full bundle)
+        expect(first[2]).toBe(100);  // 10 x 100 (1 full bundle)
+        expect(first[3]).toBe(91);   // 5 x 91 (only partial denom)
+
+        // Only 1 denomination with partial pack
+        const partialDenoms = first.filter((c) => c > 0 && c % 100 !== 0).length;
+        expect(partialDenoms).toBe(1);
 
         const total = first.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
         expect(total).toBe(123455);
     });
 
-    it('JPY ¥12,345,000 → partial, 10000 x 1234 + 5000 x 1', () => {
+    it('JPY ¥12,345,000 → partial, 10000 x 1200 + 5000 x 69 (1 partial denom)', () => {
         const JPY = [10000, 5000, 1000];
         const stock = unlimitedStock(JPY);
         const denomsSorted = [...JPY].sort((a, b) => b - a);
@@ -1076,9 +1109,18 @@ describe('complex scenarios: partial bundles', () => {
         const results = w.enumeratePartialConfigs(12345000, JPY, stock, 10);
         expect(results.length).toBeGreaterThan(0);
 
+        results.sort((a, b) => w.compareScores(
+            w.scorePartial(a, denomsSorted, w.BUNDLE_SIZE),
+            w.scorePartial(b, denomsSorted, w.BUNDLE_SIZE)
+        ));
+
         const first = results[0];
-        expect(first[0]).toBe(1234); // 10000 x 1234
-        expect(first[1]).toBe(1);    // 5000 x 1
+        expect(first[0]).toBe(1200); // 10000 x 1200 (12 full bundles, 0 partial)
+        expect(first[1]).toBe(69);   // 5000 x 69 (only partial denom)
+
+        // Only 1 denomination with partial pack
+        const partialDenoms = first.filter((c) => c > 0 && c % 100 !== 0).length;
+        expect(partialDenoms).toBe(1);
 
         const total = first.reduce((s, c, i) => s + denomsSorted[i] * c, 0);
         expect(total).toBe(12345000);

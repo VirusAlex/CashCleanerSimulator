@@ -72,7 +72,7 @@ body.currency-gbp {
 
 /* Coin-specific backgrounds */
 body.currency-usd.asset-coins {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../usd_coins.webp');
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), url('../usd_coins.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -80,7 +80,7 @@ body.currency-usd.asset-coins {
 }
 
 body.currency-eur.asset-coins {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../eur_coins.webp');
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), url('../eur_coins.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -88,7 +88,7 @@ body.currency-eur.asset-coins {
 }
 
 body.currency-jpy.asset-coins {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../jpy_coins.webp');
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), url('../jpy_coins.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -96,7 +96,7 @@ body.currency-jpy.asset-coins {
 }
 
 body.currency-gbp.asset-coins {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../gbp_coins.webp');
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), url('../gbp_coins.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -1059,6 +1059,40 @@ body.currency-gbp.asset-coins {
     padding: 30px;
     overflow-y: auto;
     flex: 1;
+}
+
+.partial-packs-legend {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(255, 165, 0, 0.08);
+    border: 1px solid rgba(255, 165, 0, 0.25);
+    border-radius: 10px;
+}
+
+.partial-packs-legend .partial-legend-title {
+    font-weight: 600;
+    font-size: 0.85em;
+    color: #e67e00;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.partial-packs-legend .partial-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    font-size: 0.85em;
+}
+
+.partial-packs-legend .partial-swatch {
+    width: 28px;
+    height: 18px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    border: 1.5px solid;
 }
 
 .block-modal-footer {

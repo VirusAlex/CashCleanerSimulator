@@ -746,11 +746,11 @@ function renderVariant(container, variant, currency) {
                     <span class="denom-badge ${getDenomClass(item.denomination)}">
                         ${denomLabel}
                     </span>
-                    × ${item.bills} ${itemLabel} (partial pack)
+                    × ${item.bills}/${getCurrentBundleSize()} ${itemLabel} (partial pack)
                 `;
             } else {
                 denomDisplay = `
-                    ${typeIcon}${item.bills} ${itemLabel} ×
+                    ${typeIcon}${item.bills}/${getCurrentBundleSize()} ${itemLabel} ×
                     <span class="denom-badge ${getDenomClass(item.denomination)}">
                         ${denomLabel}
                     </span>
@@ -898,11 +898,11 @@ function displayResults(data) {
                         <span class="denom-badge ${getDenomClass(item.denomination)}">
                             ${denomLbl}
                         </span>
-                        × ${item.bills} ${itemLabel} (partial pack)
+                        × ${item.bills}/${getCurrentBundleSize()} ${itemLabel} (partial pack)
                     `;
                 } else {
                     denomDisplay = `
-                        ${typeIcon}${item.bills} ${itemLabel} ×
+                        ${typeIcon}${item.bills}/${getCurrentBundleSize()} ${itemLabel} ×
                         <span class="denom-badge ${getDenomClass(item.denomination)}">
                             ${denomLbl}
                         </span>
@@ -2207,6 +2207,47 @@ function buildBlockVisualization(variant) {
 
         block3d.appendChild(blockContainer);
     }
+
+    // Build partial packs legend
+    buildPartialPacksLegend(variant);
+}
+
+// Build legend showing partial pack details
+function buildPartialPacksLegend(variant) {
+    const legend = document.getElementById('partialPacksLegend');
+    if (!legend) return;
+
+    const partialItems = variant.breakdown.filter(item => item.type === 'partial');
+    if (partialItems.length === 0) {
+        legend.style.display = 'none';
+        return;
+    }
+
+    const isCoins = assetType === 'coins';
+    const bSize = getCurrentBundleSize();
+    const bundleWord = isCoins ? t('rollsText') : t('bundlesText');
+    const itemWord = isCoins ? t('coinsText') : 'bills';
+
+    let html = `<div class="partial-legend-title">
+        <i class="fas fa-asterisk"></i>
+        ${isCoins ? t('partialRollsFound') : t('partialBundlesFound')}
+    </div>`;
+
+    partialItems.forEach(item => {
+        const color = getDenomColor(item.denomination);
+        const denomLabel = formatDenom(item.denomination, lastResults.currency);
+        html += `
+            <div class="partial-legend-item">
+                <div class="partial-swatch" style="background: linear-gradient(15deg, ${color} 50%, rgba(255,255,255,0.7) 50%); border-color: ${color};"></div>
+                <span class="denom-badge ${getDenomClass(item.denomination)}">${denomLabel}</span>
+                <span>${item.bills}/${bSize} ${itemWord}</span>
+                <span style="color: var(--text-secondary);">= ${formatCurrency(item.value, lastResults.currency)}</span>
+            </div>
+        `;
+    });
+
+    legend.innerHTML = html;
+    legend.style.display = 'block';
 }
 
 // Create a layer of the block (3 stacks) - bills only
