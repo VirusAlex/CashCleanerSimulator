@@ -671,13 +671,16 @@ function updateCurrencyButtons() {
     }
 }
 
-// Update background based on currency
+// Update background based on currency and asset type
 function updateCurrencyBackground() {
     // Remove all currency classes
     document.body.classList.remove('currency-usd', 'currency-eur', 'currency-jpy', 'currency-gbp');
-    
+
     // Add current currency class
     document.body.classList.add(`currency-${currentCurrency.toLowerCase()}`);
+
+    // Toggle asset-coins class for coin backgrounds
+    document.body.classList.toggle('asset-coins', assetType === 'coins');
 }
 
 // Update display order buttons
@@ -1504,6 +1507,7 @@ document.addEventListener('click', (e) => {
         assetType = btn.dataset.asset;
         updateAssetTypeButtons();
         updateCurrencyButtons(); // Update placeholder and step for amount field
+        updateCurrencyBackground(); // Update background for bills/coins
         updateStockInputs();
         saveSettings();
 

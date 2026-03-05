@@ -70,6 +70,39 @@ body.currency-gbp {
     background-color: black;
 }
 
+/* Coin-specific backgrounds */
+body.currency-usd.asset-coins {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../usd_coins.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+
+body.currency-eur.asset-coins {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../eur_coins.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+
+body.currency-jpy.asset-coins {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../jpy_coins.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+
+body.currency-gbp.asset-coins {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(64, 6, 122, 0.5) 100%), url('../gbp_coins.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
