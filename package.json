@@ -1,0 +1,24 @@
+{
+  "name": "cashcleanersimulator",
+  "version": "1.0.0",
+  "description": "**🌐 Live Demo:** [https://virusalex.github.io/CashCleanerSimulator/](https://virusalex.github.io/CashCleanerSimulator/)",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VirusAlex/CashCleanerSimulator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/VirusAlex/CashCleanerSimulator/issues"
+  },
+  "homepage": "https://github.com/VirusAlex/CashCleanerSimulator#readme",
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}
