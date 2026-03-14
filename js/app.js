@@ -904,6 +904,7 @@ function displayResults(data) {
     
     if (data.error) {
         displayOrderSwitch.style.display = 'none';
+    document.getElementById('clearResultsBtn').style.display = 'none';
         resultsDiv.innerHTML = `
             <div class="error">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -915,6 +916,7 @@ function displayResults(data) {
 
     // Show display order switch
     displayOrderSwitch.style.display = 'flex';
+    document.getElementById('clearResultsBtn').style.display = '';
     
     let html = '';
     
@@ -1155,6 +1157,7 @@ document.getElementById('calculatorForm').addEventListener('submit', (e) => {
     
     // Show initial loading state
     displayOrderSwitch.style.display = 'none';
+    document.getElementById('clearResultsBtn').style.display = 'none';
     resultsDiv.innerHTML = `
         <div class="success">
             <i class="fas fa-search"></i>
@@ -1353,6 +1356,7 @@ document.getElementById('calculatorForm').addEventListener('submit', (e) => {
                     
                     // Show display order switch
                     displayOrderSwitch.style.display = 'flex';
+    document.getElementById('clearResultsBtn').style.display = '';
                     
                     // Update final status message
                     const statusDiv = resultsDiv.querySelector('.success, .error');
@@ -1420,6 +1424,7 @@ document.getElementById('calculatorForm').addEventListener('submit', (e) => {
 
             // Show display order switch
             displayOrderSwitch.style.display = 'flex';
+    document.getElementById('clearResultsBtn').style.display = '';
 
             // Update final status message
             const statusDiv = resultsDiv.querySelector('.success, .error');
@@ -1614,6 +1619,7 @@ document.addEventListener('click', (e) => {
             </div>
         `;
         document.getElementById('displayOrderSwitch').style.display = 'none';
+        document.getElementById('clearResultsBtn').style.display = 'none';
     }
 });
 
@@ -2668,6 +2674,25 @@ document.getElementById('blockModal').addEventListener('click', (e) => {
             rotationInterval = null;
         }
     }
+});
+
+// Clear results button handler
+document.getElementById('clearResultsBtn').addEventListener('click', () => {
+    lastResults = null;
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = `
+        <div id="initialMessage">
+            <p style="text-align: center; color: var(--text-secondary); padding: 40px;">
+                <i class="fas fa-arrow-left" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                <span data-i18n="initialMessage">${t('initialMessage')}</span>
+            </p>
+        </div>
+    `;
+    document.getElementById('displayOrderSwitch').style.display = 'none';
+    document.getElementById('clearResultsBtn').style.display = 'none';
+    const amountField = document.getElementById('amount');
+    amountField.focus();
+    amountField.select();
 });
 
 // Initialize

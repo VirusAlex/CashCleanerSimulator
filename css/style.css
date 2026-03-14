@@ -143,6 +143,23 @@ body.currency-gbp.asset-coins {
     box-shadow: var(--shadow-lg);
 }
 
+.clear-results-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.clear-results-btn:hover {
+    color: var(--danger-color);
+    background: rgba(239, 68, 68, 0.1);
+}
+
 .input-panel h2, .results-panel h2 {
     font-size: 1.5rem;
     font-weight: 600;
