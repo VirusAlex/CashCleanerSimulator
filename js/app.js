@@ -44,7 +44,7 @@ const DENOM_COLORS = {
     'USD': { 100: '#fbbf24', 50: '#f97316', 20: '#3b82f6', 10: '#10b981' },
     'EUR': { 100: '#fbbf24', 50: '#f97316', 20: '#3b82f6' },
     'JPY': { 10000: '#fbbf24', 5000: '#f97316', 1000: '#10b981' },
-    'GBP': { 50: '#fbbf24', 20: '#f97316', 10: '#3b82f6', 5: '#10b981' }
+    'GBP': { 50: '#ef4444', 20: '#3b82f6', 10: '#10b981', 5: '#8b5cf6' }
 };
 
 // Denomination colors (per currency, coins)
@@ -489,6 +489,7 @@ function createMultiCurrencyTable() {
     ['USD', 'EUR', 'JPY', 'GBP'].forEach(currency => {
         const tableWrapper = document.createElement('div');
         tableWrapper.className = 'stock-table-wrapper';
+        tableWrapper.dataset.currency = currency;
         
         // Currency header
         const currencyHeader = document.createElement('div');
@@ -639,7 +640,12 @@ function updateCurrencyButtons() {
     document.querySelectorAll('.currency-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.currency === currentCurrency);
     });
-    
+
+    // Highlight active stock table
+    document.querySelectorAll('.stock-table-wrapper').forEach(wrapper => {
+        wrapper.classList.toggle('active', wrapper.dataset.currency === currentCurrency);
+    });
+
     // Update currency indicator in amount field
     const currencyIndicator = document.getElementById('currencyIndicator');
     if (currencyIndicator) {
@@ -706,7 +712,9 @@ const COLOR_TO_NAME = {
     '#fbbf24': 'yellow',
     '#f97316': 'orange',
     '#3b82f6': 'blue',
-    '#10b981': 'green'
+    '#10b981': 'green',
+    '#ef4444': 'red',
+    '#8b5cf6': 'purple'
 };
 
 function getDenomClass(denom, currency) {
@@ -2423,3 +2431,4 @@ updateStockModeButtons();
 updateDenominationOrderButtons();
 updateAssetTypeButtons();
 updateStockInputs();
+updateCurrencyButtons();

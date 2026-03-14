@@ -16,6 +16,8 @@
     --denom-orange: #f97316;
     --denom-blue: #3b82f6;
     --denom-green: #10b981;
+    --denom-red: #ef4444;
+    --denom-purple: #8b5cf6;
 }
 
 * {
@@ -505,9 +507,17 @@ body.currency-gbp.asset-coins {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     display: flex;
     align-items: stretch;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0.75;
+}
+
+.stock-table-wrapper.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    opacity: 1;
 }
 
 .currency-header {
@@ -787,6 +797,8 @@ body.currency-gbp.asset-coins {
 .denom-orange { background-color: var(--denom-orange); }
 .denom-blue { background-color: var(--denom-blue); }
 .denom-green { background-color: var(--denom-green); }
+.denom-red { background-color: var(--denom-red); }
+.denom-purple { background-color: var(--denom-purple); }
 
 /* Language switcher */
 .language-switcher {
