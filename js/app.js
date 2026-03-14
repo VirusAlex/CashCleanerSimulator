@@ -92,6 +92,66 @@ function formatDenom(denom, currency) {
     return `${symbol}${denom}`;
 }
 
+// Format large currency amounts compactly: 1500000 -> "1.5M", 75000 -> "75K"
+function formatCompactAmount(value, currency) {
+    const symbol = CURRENCY_SYMBOLS[currency] || '';
+    if (value === 0) return '';
+    const abs = Math.abs(value);
+    let formatted;
+    if (abs >= 1e9) {
+        formatted = (value / 1e9).toFixed(abs >= 10e9 ? 0 : 1).replace(/\.0$/, '') + 'B';
+    } else if (abs >= 1e6) {
+        formatted = (value / 1e6).toFixed(abs >= 10e6 ? 0 : 1).replace(/\.0$/, '') + 'M';
+    } else if (abs >= 1e4) {
+        formatted = (value / 1e3).toFixed(abs >= 100e3 ? 0 : 1).replace(/\.0$/, '') + 'K';
+    } else {
+        formatted = value.toLocaleString();
+    }
+    return symbol + formatted;
+}
+
+// Recalculate and display stock subtotals per denomination and currency total
+function updateStockSubtotals() {
+    const bundleSize = getCurrentBundleSize();
+    const currencies = ['USD', 'EUR', 'JPY', 'GBP'];
+
+    currencies.forEach(currency => {
+        let currencyTotal = 0;
+        let hasAnyValue = false;
+
+        document.querySelectorAll(`#stockMultiCurrency input[type="number"][data-currency="${currency}"]`).forEach(input => {
+            const denom = parseFloat(input.dataset.denom);
+            const rawValue = input.value;
+            const subtotalCell = document.querySelector(`.stock-subtotal[data-denom="${input.dataset.denom}"][data-currency="${currency}"]`);
+            if (!subtotalCell) return;
+
+            if (rawValue === '' || rawValue === null) {
+                // Unlimited — don't show subtotal
+                subtotalCell.textContent = '∞';
+                subtotalCell.classList.add('infinite');
+            } else {
+                const count = parseInt(rawValue) || 0;
+                const bills = stockMode === 'bundles' ? count * bundleSize : count;
+                const amount = bills * denom;
+                currencyTotal += amount;
+                hasAnyValue = true;
+                subtotalCell.textContent = formatCompactAmount(amount, currency);
+                subtotalCell.classList.remove('infinite');
+            }
+        });
+
+        const totalCell = document.querySelector(`.stock-total-value[data-currency="${currency}"]`);
+        if (totalCell) {
+            if (hasAnyValue) {
+                const symbol = CURRENCY_SYMBOLS[currency] || '';
+                totalCell.textContent = symbol + currencyTotal.toLocaleString();
+            } else {
+                totalCell.textContent = '';
+            }
+        }
+    });
+}
+
 // Internationalization
 
 // Current language
@@ -419,6 +479,7 @@ function loadStockData() {
                         }
                     }
                 });
+                updateStockSubtotals();
             }, 100);
         }
     } catch (e) {
@@ -567,10 +628,26 @@ function createMultiCurrencyTable() {
             `;
             row.appendChild(stockCell);
 
+            // Denomination subtotal cell
+            const subtotalCell = document.createElement('td');
+            subtotalCell.className = 'stock-subtotal';
+            subtotalCell.dataset.denom = denom;
+            subtotalCell.dataset.currency = currency;
+            row.appendChild(subtotalCell);
+
             row.dataset.denom = denom;
             table.appendChild(row);
         });
-        
+
+        // Currency total footer
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'stock-total-row';
+        totalRow.innerHTML = `
+            <td colspan="3" class="stock-total-label">${CURRENCY_SYMBOLS[currency]}</td>
+            <td class="stock-total-value" data-currency="${currency}"></td>
+        `;
+        table.appendChild(totalRow);
+
         tableContainer.appendChild(table);
         tableWrapper.appendChild(currencyHeader);
         tableWrapper.appendChild(tableContainer);
@@ -1571,6 +1648,7 @@ document.addEventListener('input', (e) => {
         // Save immediately for better UX
         clearTimeout(window.saveStockTimeout);
         window.saveStockTimeout = setTimeout(saveStockData, 100);
+        updateStockSubtotals();
     }
 });
 
@@ -2036,7 +2114,8 @@ async function executeOrder(variant) {
     
     // Save updated stock
     saveStockData();
-    
+    updateStockSubtotals();
+
     // Show success message with stock changes
     const stockChangesHTML = generateStockChangesHTML(previewStockChanges, currentCurrency);
     await showAlert(t('executionSuccess'), t('orderExecuted'), 'success', stockChangesHTML);

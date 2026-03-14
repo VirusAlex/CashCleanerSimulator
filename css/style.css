@@ -287,6 +287,40 @@ body.currency-gbp.asset-coins {
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
+.stock-subtotal {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-align: right;
+    padding: 0 6px;
+    white-space: nowrap;
+    min-width: 50px;
+}
+
+.stock-subtotal.infinite {
+    opacity: 0.3;
+}
+
+.stock-total-row {
+    border-top: 1px solid var(--border-color);
+}
+
+.stock-total-label {
+    text-align: right;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 4px 4px;
+}
+
+.stock-total-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: right;
+    padding: 4px 6px;
+    white-space: nowrap;
+}
+
 .stock-table .stock-cell input:disabled {
     background: #f8f9fa;
     color: #adb5bd;
