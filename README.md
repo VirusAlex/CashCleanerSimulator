@@ -2,7 +2,7 @@
 
 **🌐 Live Demo:** [https://virusalex.github.io/CashCleanerSimulator/](https://virusalex.github.io/CashCleanerSimulator/)
 
-A smart web calculator for optimizing cash distribution into bundles and blocks with support for multiple currencies and flexible stock management.
+Calculator for [Cash Cleaner Simulator](https://store.steampowered.com/app/2488370/Cash_Cleaner_Simulator/) — helps plan how to assemble cash orders from your stock into bundles and blocks.
 
 ---
 
@@ -10,34 +10,29 @@ A smart web calculator for optimizing cash distribution into bundles and blocks 
 
 ### What is this?
 
-Cash Cleaner Calculator helps you determine the optimal way to package cash into bundles and blocks while respecting stock limitations. It's designed for banks, cash management companies, and financial institutions that need to efficiently organize large amounts of cash.
+In Cash Cleaner Simulator you deal with piles of cash that need to be sorted and packed. This calculator takes an order amount, looks at what you have in stock, and tells you the best way to pack it — which denominations to use, how many bundles and blocks you get, and in what order to assemble them.
 
-### Key Features
+The algorithm tries to maximize full blocks (30 bundles = 3,000 bills), then fills with loose bundles, and covers the remainder with individual bills.
 
-- **🎯 Smart Optimization**: Three-level algorithm (Ideal Blocks → Loose Bundles → Partial Packs)
-- **💱 Multi-Currency**: USD, EUR, JPY support with proper denominations
-- **📦 Flexible Stock Input**: Switch between bundle count or individual bill count
-- **⚡ Instant Results**: No server required - runs entirely in your browser
-- **🌍 Bilingual**: English/Russian interface with auto-detection
-- **📱 Mobile Friendly**: Responsive design works on any device
-- **💾 Smart Storage**: Remembers your preferences and stock data
+### Features
 
-### How it works
+- **4 currencies**: 🇺🇸 USD, 🇪🇺 EUR, 🇯🇵 JPY, 🇬🇧 GBP with proper denominations and color coding
+- **Bills and coins**: Toggle between banknote and coin asset types
+- **Stock management**: Enter your stock per denomination as bundles or individual bills; balances update when you execute orders
+- **Multiple variants**: Several packing options ranked by compactness — pick the one that fits
+- **Block visualization**: Assembly dialog shows the packing order; click blocks to mark them as collected
+- **No backend**: All calculations run in the browser. Settings and stock persist in LocalStorage
+- **English / Russian** with auto-detection
+- **Mobile friendly**
 
-1. **Enter order amount** - Any positive value
-2. **Select currency** - USD (🇺🇸), EUR (🇪🇺), or JPY (🇯🇵)
-3. **Set stock limits** - Toggle between bundles (📦) or bills (💵) input
-4. **Get optimized results** - Multiple variants ranked by efficiency
+### How to use
 
-### Algorithm Logic
+1. Enter the order amount
+2. Pick a currency (🇺🇸 USD, 🇪🇺 EUR, 🇯🇵 JPY, 🇬🇧 GBP)
+3. Set stock limits per denomination (or leave unlimited)
+4. Review variants, execute the one you want
 
-- **Ideal Blocks**: 30 bundles per block (3,000 bills total) - most compact
-- **Loose Bundles**: Any number of complete 100-bill bundles
-- **Partial Packs**: Individual bills when bundles can't cover the amount
-
-### Quick Start
-
-Simply open the [live demo](https://virusalex.github.io/CashCleanerSimulator/) in your browser or download `index.html` and open it locally. No installation required!
+Open the [live demo](https://virusalex.github.io/CashCleanerSimulator/) or clone the repo and serve it locally (e.g. `python -m http.server`). No build step needed.
 
 ---
 
@@ -45,49 +40,39 @@ Simply open the [live demo](https://virusalex.github.io/CashCleanerSimulator/) i
 
 ### Что это?
 
-Cash Cleaner Calculator помогает определить оптимальный способ упаковки наличных в пачки и блоки с учетом ограничений по остаткам. Разработан для банков, инкассаторских компаний и финансовых учреждений, которым нужно эффективно организовывать большие объемы наличности.
+В Cash Cleaner Simulator нужно сортировать и упаковывать наличку. Калькулятор берёт сумму заказа, смотрит что есть на складе, и подбирает оптимальную раскладку — какие номиналы использовать, сколько пачек и блоков получится, в каком порядке собирать.
 
-### Основные возможности
+Алгоритм старается набрать максимум полных блоков (30 пачек = 3 000 купюр), потом добирает свободными пачками, остаток — отдельными купюрами.
 
-- **🎯 Умная оптимизация**: Трёхуровневый алгоритм (Идеальные блоки → Свободные пачки → Неполные пачки)
-- **💱 Мультивалютность**: Поддержка USD, EUR, JPY с правильными номиналами
-- **📦 Гибкий ввод остатков**: Переключение между количеством пачек или отдельных купюр
-- **⚡ Мгновенные результаты**: Работает полностью в браузере без сервера
-- **🌍 Двуязычность**: Интерфейс на английском/русском с автоопределением
-- **📱 Мобильная версия**: Адаптивный дизайн для любых устройств
-- **💾 Умное хранение**: Запоминает настройки и данные склада
+### Возможности
 
-### Как работает
+- **4 валюты**: 🇺🇸 USD, 🇪🇺 EUR, 🇯🇵 JPY, 🇬🇧 GBP с реальными номиналами и цветовой маркировкой
+- **Купюры и монеты**: Переключение между типами активов
+- **Учёт остатков**: Остатки склада по номиналам — в пачках или поштучно; обновляются при выполнении заказов
+- **Несколько вариантов**: Раскладки отсортированы по компактности — выбирайте подходящую
+- **Визуализация сборки**: Диалог с порядком сборки; клик по блоку отмечает его как собранный
+- **Без бэкенда**: Все расчёты в браузере. Настройки и остатки в LocalStorage
+- **Русский / английский** с автоопределением
+- **Мобильная версия**
 
-1. **Введите сумму заказа** - Любое положительное значение
-2. **Выберите валюту** - USD (🇺🇸), EUR (🇪🇺) или JPY (🇯🇵)
-3. **Укажите остатки склада** - Переключайтесь между пачками (📦) и купюрами (💵)
-4. **Получите оптимизированные результаты** - Несколько вариантов по эффективности
+### Как пользоваться
 
-### Логика алгоритма
+1. Введите сумму заказа
+2. Выберите валюту (🇺🇸 USD, 🇪🇺 EUR, 🇯🇵 JPY, 🇬🇧 GBP)
+3. Задайте остатки по номиналам (или оставьте без ограничений)
+4. Выберите вариант и выполните заказ
 
-- **Идеальные блоки**: 30 пачек в блоке (3,000 купюр) - максимальная компактность
-- **Свободные пачки**: Любое количество полных пачек по 100 купюр
-- **Неполные пачки**: Отдельные купюры, когда пачки не покрывают сумму
-
-### Быстрый старт
-
-Просто откройте [демо-версию](https://virusalex.github.io/CashCleanerSimulator/) в браузере или скачайте `index.html` и откройте локально. Установка не требуется!
+Откройте [демо](https://virusalex.github.io/CashCleanerSimulator/) или склонируйте репозиторий и запустите локальный сервер (например `python -m http.server`). Сборка не требуется.
 
 ---
 
-## 🛠 Technical Details
+## Technical details
 
-- **Single file**: `index.html` (~100KB) - no dependencies
-- **Technologies**: HTML5, CSS3, Vanilla JavaScript (ES6+)
-- **Algorithms**: Depth-first search with optimization constraints
-- **Storage**: LocalStorage for settings and stock data
-- **Performance**: Client-side processing with timeout protection
+- Single-page app: HTML + CSS + JS, no build step
+- Vanilla JavaScript, no frameworks
+- Calculation in a Web Worker (DFS with timeout protection)
+- LocalStorage for persistence
 
-## 📄 License
+## License
 
-MIT License - feel free to use, modify, and distribute.
-
-## 🤝 Contributing
-
-Found a bug or have an idea? Open an issue or submit a pull request on [GitHub](https://github.com/VirusAlex/CashCleanerSimulator). 
+MIT
