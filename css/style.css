@@ -108,6 +108,7 @@ body.currency-gbp.asset-coins {
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
 }
 
 .header {
@@ -327,15 +328,6 @@ body.currency-gbp.asset-coins {
     font-weight: 600;
     color: var(--text-secondary);
     padding: 4px 4px;
-}
-
-.stock-total-value {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    text-align: right;
-    padding: 4px 6px;
-    white-space: nowrap;
 }
 
 .stock-table .stock-cell input:disabled {
@@ -1505,18 +1497,51 @@ body.currency-gbp.asset-coins {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
-    .header h1 {
-        font-size: 2rem;
+
+    .initial-arrow {
+        transform: rotate(90deg);
     }
-    
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .language-switcher {
+        position: static;
+        justify-content: center;
+        margin-bottom: 4px;
+        order: 1;
+    }
+
+    .header {
+        margin-bottom: 10px;
+        padding-top: 0;
+        order: 2;
+    }
+
+    .header h1 {
+        font-size: 1.6rem;
+    }
+
+    .main-content {
+        order: 4;
+    }
+
     .input-panel, .results-panel {
         padding: 20px;
     }
-    
+
     .stock-table .stock-cell input {
         width: 60px;
         font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .stock-subtotal {
+        display: none;
     }
 }
 
@@ -1588,8 +1613,9 @@ body.currency-gbp.asset-coins {
 
 .github-link {
     position: absolute;
-    top: 70px;
-    right: 20px;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
     background: rgba(255, 255, 255, 0.2);
     border: 2px solid rgba(255, 255, 255, 0.3);
     color: white;
@@ -1616,8 +1642,9 @@ body.currency-gbp.asset-coins {
 
 .steam-link {
     position: absolute;
-    top: 115px;
-    right: 20px;
+    top: 60px;
+    left: 20px;
+    z-index: 10;
     background: rgba(255, 255, 255, 0.2);
     border: 2px solid rgba(255, 255, 255, 0.3);
     color: white;
@@ -1642,17 +1669,32 @@ body.currency-gbp.asset-coins {
     color: white;
 }
 
+@media (max-width: 768px) {
+    .github-link,
+    .steam-link {
+        position: static;
+        display: inline-flex;
+        width: auto;
+        margin: 0 4px 8px;
+        order: 3;
+    }
+}
 
 /* Currency buttons */
 .currency-buttons {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 8px;
-    flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+    .currency-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
 .currency-btn {
-    flex: 1;
-    min-width: 80px;
     padding: 12px 16px;
     border: 2px solid var(--border-color);
     border-radius: 12px;

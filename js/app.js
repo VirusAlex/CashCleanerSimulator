@@ -140,14 +140,11 @@ function updateStockSubtotals() {
             }
         });
 
-        const totalCell = document.querySelector(`.stock-total-value[data-currency="${currency}"]`);
-        if (totalCell) {
-            if (hasAnyValue) {
-                const symbol = CURRENCY_SYMBOLS[currency] || '';
-                totalCell.textContent = symbol + currencyTotal.toLocaleString();
-            } else {
-                totalCell.textContent = '';
-            }
+        const labelCell = document.querySelector(`.stock-total-label[data-currency="${currency}"]`);
+        const symbol = CURRENCY_SYMBOLS[currency] || '';
+        const totalText = hasAnyValue ? symbol + currencyTotal.toLocaleString() : '';
+        if (labelCell) {
+            labelCell.textContent = hasAnyValue ? totalText : symbol;
         }
     });
 }
@@ -646,8 +643,7 @@ function createMultiCurrencyTable() {
         const totalRow = document.createElement('tr');
         totalRow.className = 'stock-total-row';
         totalRow.innerHTML = `
-            <td colspan="3" class="stock-total-label">${CURRENCY_SYMBOLS[currency]}</td>
-            <td class="stock-total-value" data-currency="${currency}"></td>
+            <td colspan="4" class="stock-total-label" data-currency="${currency}" data-symbol="${CURRENCY_SYMBOLS[currency]}">${CURRENCY_SYMBOLS[currency]}</td>
         `;
         table.appendChild(totalRow);
 
@@ -1613,7 +1609,7 @@ document.addEventListener('click', (e) => {
         resultsDiv.innerHTML = `
             <div id="initialMessage">
                 <p style="text-align: center; color: var(--text-secondary); padding: 40px;">
-                    <i class="fas fa-arrow-left" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                    <i class="fas fa-arrow-left initial-arrow" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
                     <span data-i18n="initialMessage">${t('initialMessage')}</span>
                 </p>
             </div>
@@ -2683,7 +2679,7 @@ document.getElementById('clearResultsBtn').addEventListener('click', () => {
     resultsDiv.innerHTML = `
         <div id="initialMessage">
             <p style="text-align: center; color: var(--text-secondary); padding: 40px;">
-                <i class="fas fa-arrow-left" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                <i class="fas fa-arrow-left initial-arrow" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
                 <span data-i18n="initialMessage">${t('initialMessage')}</span>
             </p>
         </div>
