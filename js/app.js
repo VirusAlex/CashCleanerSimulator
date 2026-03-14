@@ -166,6 +166,7 @@ let displayOrder = 'denomination-first'; // 'denomination-first' or 'quantity-fi
 let stockMode = 'bills'; // 'bundles' or 'bills'
 let denominationOrder = 'high-to-low'; // 'high-to-low' or 'low-to-high'
 let assetType = 'bills'; // 'bills' or 'coins'
+let blockLayout = 'grouped'; // 'grouped' or 'sequential'
 
 // Calculation control
 let stopCalculationRequested = false;
@@ -238,7 +239,8 @@ function saveSettings() {
         stockMode: stockMode,
         denominationOrder: denominationOrder,
         language: currentLang,
-        assetType: assetType
+        assetType: assetType,
+        blockLayout: blockLayout
     };
     localStorage.setItem('cash-cleaner-settings', JSON.stringify(settings));
 }
@@ -254,6 +256,7 @@ function loadSettings() {
             stockMode = settings.stockMode || 'bills';
             denominationOrder = settings.denominationOrder || 'high-to-low';
             assetType = settings.assetType || 'bills';
+            blockLayout = settings.blockLayout || 'grouped';
             if (settings.language) {
                 currentLang = settings.language;
             }
@@ -806,7 +809,7 @@ function renderVariant(container, variant, currency) {
     const variantClass = isIdeal ? 'ideal' : 'loose';
     const isCoins = assetType === 'coins';
     const bundleLabel = isCoins ? t('rollsText') : t('bundlesText');
-    const itemLabel = isCoins ? t('coinsText') : 'bills';
+    const itemLabel = isCoins ? t('coinsText') : t('billsText');
 
     let variantTypeText = isIdeal ? t('idealBlocks', {count: variant.blocks}) : t('partialBlocks', {count: variant.blocks});
 
@@ -831,7 +834,7 @@ function renderVariant(container, variant, currency) {
                     <span class="denom-badge ${getDenomClass(item.denomination)}">
                         ${denomLabel}
                     </span>
-                    × ${item.bills}/${getCurrentBundleSize()} ${itemLabel} (partial pack)
+                    × ${item.bills}/${getCurrentBundleSize()} ${itemLabel} (${t('partialPack')})
                 `;
             } else {
                 denomDisplay = `
@@ -839,7 +842,7 @@ function renderVariant(container, variant, currency) {
                     <span class="denom-badge ${getDenomClass(item.denomination)}">
                         ${denomLabel}
                     </span>
-                    (partial pack)
+                    (${t('partialPack')})
                 `;
             }
         } else {
@@ -921,7 +924,7 @@ function displayResults(data) {
     const partialFoundKey = isCoins ? 'partialRollsFound' : 'partialBundlesFound';
     const partialDescKey = isCoins ? 'partialRollsDesc' : 'partialBundlesDesc';
     const bundleLabel = isCoins ? t('rollsText') : t('bundlesText');
-    const itemLabel = isCoins ? t('coinsText') : 'bills';
+    const itemLabel = isCoins ? t('coinsText') : t('billsText');
 
     if (data.has_ideal) {
         html += `
@@ -983,7 +986,7 @@ function displayResults(data) {
                         <span class="denom-badge ${getDenomClass(item.denomination)}">
                             ${denomLbl}
                         </span>
-                        × ${item.bills}/${getCurrentBundleSize()} ${itemLabel} (partial pack)
+                        × ${item.bills}/${getCurrentBundleSize()} ${itemLabel} (${t('partialPack')})
                     `;
                 } else {
                     denomDisplay = `
@@ -991,7 +994,7 @@ function displayResults(data) {
                         <span class="denom-badge ${getDenomClass(item.denomination)}">
                             ${denomLbl}
                         </span>
-                        (partial pack)
+                        (${t('partialPack')})
                     `;
                 }
             } else {
@@ -1565,6 +1568,7 @@ document.addEventListener('click', (e) => {
         // Switch mode
         stockMode = btn.dataset.mode;
         updateStockInputs();
+        updateCurrencyButtons();
         saveSettings();
     }
     // Denomination order buttons
@@ -1580,6 +1584,7 @@ document.addEventListener('click', (e) => {
         saveSettings();
         createMultiCurrencyTable();
         loadStockData(); // Reload data after recreating table
+        updateCurrencyButtons();
     }
     // Asset type buttons (Bills/Coins)
     else if (e.target.closest('#assetTypeSwitch .order-btn')) {
@@ -1594,6 +1599,7 @@ document.addEventListener('click', (e) => {
         updateCurrencyButtons(); // Update placeholder and step for amount field
         updateCurrencyBackground(); // Update background for bills/coins
         updateStockInputs();
+        updateCurrencyButtons();
         saveSettings();
 
         // Clear results when switching asset type
@@ -2050,8 +2056,8 @@ function generateStockChangesHTML(stockChanges, currency = currentCurrency) {
     stockChanges.forEach(change => {
         const color = getDenomColor(change.denomination);
         const modeText = stockMode === 'bundles'
-            ? (assetType === 'coins' ? 'rollsText' : 'bundles')
-            : (assetType === 'coins' ? 'coinsText' : 'bills');
+            ? (assetType === 'coins' ? 'rollsText' : 'bundlesText')
+            : (assetType === 'coins' ? 'coinsText' : 'billsText');
 
         html += `
             <div class="stock-change-item">
@@ -2149,48 +2155,153 @@ function showBlockVisualization(variant) {
     const canExecute = checkOrderExecutable(variant);
     executeBtn.disabled = !canExecute;
     executeBtn.title = canExecute ? t('orderExecutionConfirm') : t('insufficientStock');
-    
+
+    // Sync layout switch state
+    document.querySelectorAll('#blockLayoutSwitch .order-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.layout === blockLayout);
+    });
+
     buildBlockVisualization(variant);
     modal.classList.add('show');
 
     animateBlockBuild();
 }
 
-// Get flat array of all bundles/rolls from variant breakdown
+// Get flat array of all bundles/rolls from variant breakdown,
+// reordered for convenient assembly: homogeneous blocks first,
+// then within mixed blocks: homogeneous layers, then homogeneous stacks, then leftovers.
 function getAllBundlesFlat(variant) {
-    const allBundles = [];
     const bSize = getCurrentBundleSize();
+    const blockSize = getCurrentBlockSize();
 
-    if (variant.type === 'ideal' || variant.type === 'loose') {
-        variant.breakdown.forEach(item => {
-            for (let i = 0; i < item.bundles; i++) {
+    // Sequential mode: original simple order
+    if (blockLayout === 'sequential') {
+        return getAllBundlesFlatSequential(variant, bSize);
+    }
+
+    const layerSize = Math.floor(blockSize / 2); // 15
+    const stackSize = 5;
+
+    // 1. Build per-denomination bundle arrays
+    const denomCounts = {}; // denom -> array of bundle objects
+    const partials = [];
+
+    (variant.breakdown || []).forEach(item => {
+        if (variant.type === 'partial' && item.type === 'partial') {
+            partials.push({
+                denomination: item.denomination,
+                value: item.value,
+                type: 'partial',
+                bills: item.bills
+            });
+        } else {
+            const count = item.bundles || 0;
+            if (count > 0) {
+                if (!denomCounts[item.denomination]) denomCounts[item.denomination] = [];
+                for (let i = 0; i < count; i++) {
+                    denomCounts[item.denomination].push({
+                        denomination: item.denomination,
+                        value: item.denomination * bSize,
+                        type: 'full'
+                    });
+                }
+            }
+        }
+    });
+
+    const denoms = Object.keys(denomCounts).map(Number).sort((a, b) => b - a);
+
+    // Helper: extract N items from denom array if available
+    function extractGroup(d, size) {
+        const arr = denomCounts[d];
+        if (arr && arr.length >= size) return arr.splice(0, size);
+        return null;
+    }
+
+    // 2. Extract full homogeneous blocks (blockSize = 30)
+    const homoBlocks = [];
+    denoms.forEach(d => {
+        let group;
+        while ((group = extractGroup(d, blockSize))) homoBlocks.push(group);
+    });
+
+    // 3. Build mixed blocks from remainder
+    // Collect all remaining bundles with counts
+    const remainByDenom = {};
+    denoms.forEach(d => {
+        if (denomCounts[d] && denomCounts[d].length > 0) {
+            remainByDenom[d] = denomCounts[d];
+        }
+    });
+
+    const mixedBlocks = [];
+    const totalRemaining = () => {
+        let n = denoms.reduce((s, d) => s + (remainByDenom[d] ? remainByDenom[d].length : 0), 0);
+        return n + partials.length;
+    };
+
+    while (totalRemaining() > 0) {
+        const block = []; // will be exactly blockSize slots (or fewer for last block)
+        const target = Math.min(blockSize, totalRemaining());
+
+        // 3a. Fill with homogeneous layers (layerSize = 15)
+        for (const d of denoms) {
+            while (block.length + layerSize <= target && remainByDenom[d] && remainByDenom[d].length >= layerSize) {
+                block.push(...remainByDenom[d].splice(0, layerSize));
+            }
+        }
+
+        // 3b. Fill with homogeneous stacks (stackSize = 5)
+        for (const d of denoms) {
+            while (block.length + stackSize <= target && remainByDenom[d] && remainByDenom[d].length >= stackSize) {
+                block.push(...remainByDenom[d].splice(0, stackSize));
+            }
+        }
+
+        // 3c. Fill remaining slots with whatever's left (by denom desc)
+        for (const d of denoms) {
+            while (block.length < target && remainByDenom[d] && remainByDenom[d].length > 0) {
+                block.push(remainByDenom[d].shift());
+            }
+        }
+
+        // 3d. Append partials at the end
+        while (block.length < target && partials.length > 0) {
+            block.push(partials.shift());
+        }
+
+        mixedBlocks.push(block);
+    }
+
+    // 4. Flatten: homogeneous blocks first, then mixed blocks
+    const result = [];
+    homoBlocks.forEach(b => result.push(...b));
+    mixedBlocks.forEach(b => result.push(...b));
+
+    return result;
+}
+
+// Sequential layout: bundles in breakdown order (original behavior)
+function getAllBundlesFlatSequential(variant, bSize) {
+    const allBundles = [];
+    (variant.breakdown || []).forEach(item => {
+        if (variant.type === 'partial' && item.type === 'partial') {
+            allBundles.push({
+                denomination: item.denomination,
+                value: item.value,
+                type: 'partial',
+                bills: item.bills
+            });
+        } else {
+            for (let i = 0; i < (item.bundles || 0); i++) {
                 allBundles.push({
                     denomination: item.denomination,
                     value: item.denomination * bSize,
                     type: 'full'
                 });
             }
-        });
-    } else if (variant.type === 'partial') {
-        variant.breakdown.forEach(item => {
-            if (item.type === 'full') {
-                for (let i = 0; i < item.bundles; i++) {
-                    allBundles.push({
-                        denomination: item.denomination,
-                        value: item.denomination * bSize,
-                        type: 'full'
-                    });
-                }
-            } else if (item.type === 'partial') {
-                allBundles.push({
-                    denomination: item.denomination,
-                    value: item.value,
-                    type: 'partial',
-                    bills: item.bills
-                });
-            }
-        });
-    }
+        }
+    });
     return allBundles;
 }
 
@@ -2286,55 +2397,98 @@ function buildBlockVisualization(variant) {
 
         blockContainer.appendChild(blockElement);
 
-        // Add click handler for re-animation
+        // Add click handler to toggle collected state
+        blockContainer.dataset.blockValue = calculateBlockValue(variant, blockNum);
         blockContainer.addEventListener('click', (e) => {
             e.stopPropagation();
-            animateSingleBlock(blockElement);
+            blockContainer.classList.toggle('collected');
+            updateCollectedProgress(variant);
         });
 
         block3d.appendChild(blockContainer);
     }
 
-    // Build partial packs legend
-    buildPartialPacksLegend(variant);
+    // Build order legend (full breakdown including partial details)
+    buildOrderLegend(variant);
+
+    // Reset collected progress
+    updateCollectedProgress(variant);
 }
 
-// Build legend showing partial pack details
-function buildPartialPacksLegend(variant) {
-    const legend = document.getElementById('partialPacksLegend');
+// Build full order composition legend
+function buildOrderLegend(variant) {
+    const legend = document.getElementById('orderLegend');
     if (!legend) return;
-
-    const partialItems = variant.breakdown.filter(item => item.type === 'partial');
-    if (partialItems.length === 0) {
-        legend.style.display = 'none';
-        return;
-    }
 
     const isCoins = assetType === 'coins';
     const bSize = getCurrentBundleSize();
     const bundleWord = isCoins ? t('rollsText') : t('bundlesText');
-    const itemWord = isCoins ? t('coinsText') : 'bills';
+    const itemWord = isCoins ? t('coinsText') : t('billsText');
+    const currency = lastResults ? lastResults.currency : currentCurrency;
 
-    let html = `<div class="partial-legend-title">
-        <i class="fas fa-asterisk"></i>
-        ${isCoins ? t('partialRollsFound') : t('partialBundlesFound')}
+    let html = `<div class="order-legend-title">
+        <i class="fas fa-list-check"></i>
+        ${t('orderComposition') || 'Order composition'}
     </div>`;
 
-    partialItems.forEach(item => {
-        const color = getDenomColor(item.denomination);
-        const denomLabel = formatDenom(item.denomination, lastResults.currency);
-        html += `
-            <div class="partial-legend-item">
-                <div class="partial-swatch" style="background: linear-gradient(15deg, ${color} 50%, rgba(255,255,255,0.7) 50%); border-color: ${color};"></div>
-                <span class="denom-badge ${getDenomClass(item.denomination)}">${denomLabel}</span>
-                <span>${item.bills}/${bSize} ${itemWord}</span>
-                <span style="color: var(--text-secondary);">= ${formatCurrency(item.value, lastResults.currency)}</span>
-            </div>
-        `;
+    variant.breakdown.forEach(item => {
+        const denomLabel = formatDenom(item.denomination, currency);
+        const denomClass = getDenomClass(item.denomination);
+
+        if (item.type === 'partial') {
+            html += `
+                <div class="order-legend-item partial">
+                    <span class="denom-badge ${denomClass}">${denomLabel}</span>
+                    <span class="order-legend-qty">${item.bills}/${bSize} ${itemWord}</span>
+                    <span class="order-legend-partial">
+                        <i class="fas fa-asterisk"></i>
+                        ${t('partial')}
+                    </span>
+                    <span class="order-legend-value">${formatCurrency(item.value, currency)}</span>
+                </div>`;
+        } else {
+            const bundles = item.bundles || 0;
+            const value = item.denomination * bSize * bundles;
+            html += `
+                <div class="order-legend-item">
+                    <span class="denom-badge ${denomClass}">${denomLabel}</span>
+                    <span class="order-legend-qty">${bundles} ${bundleWord}</span>
+                    <span class="order-legend-partial"></span>
+                    <span class="order-legend-value">${formatCurrency(value, currency)}</span>
+                </div>`;
+        }
     });
 
     legend.innerHTML = html;
-    legend.style.display = 'block';
+}
+
+// Update collected blocks progress display
+function updateCollectedProgress(variant) {
+    const progress = document.getElementById('collectedProgress');
+    if (!progress) return;
+
+    const currency = lastResults ? lastResults.currency : currentCurrency;
+    const containers = document.querySelectorAll('#block3d .block-container');
+    let collectedSum = 0;
+    let collectedCount = 0;
+
+    containers.forEach(c => {
+        if (c.classList.contains('collected')) {
+            collectedSum += parseFloat(c.dataset.blockValue) || 0;
+            collectedCount++;
+        }
+    });
+
+    const totalBlocks = containers.length;
+    const totalValue = variant.total_value;
+    const pct = totalValue > 0 ? Math.round(collectedSum / totalValue * 100) : 0;
+
+    progress.innerHTML = `
+        <i class="fas fa-check-circle" style="color: ${collectedCount > 0 ? 'var(--accent-color)' : 'var(--border-color)'};"></i>
+        <span>${collectedCount}/${totalBlocks}</span>
+        <span class="collected-amount" style="color: ${collectedCount > 0 ? 'var(--accent-color)' : 'var(--text-secondary)'};">${formatCurrency(collectedSum, currency)}</span>
+        <span class="collected-pct">${pct}%</span>
+    `;
 }
 
 // Create a layer of the block (3 stacks) - bills only
@@ -2397,7 +2551,7 @@ function createBundle(bundleInfo) {
     const bundle = document.createElement('div');
     bundle.className = 'bundle';
     const bSize = getCurrentBundleSize();
-    const itemLabel = assetType === 'coins' ? 'coins' : 'bills';
+    const itemLabel = assetType === 'coins' ? t('coinsText') : t('billsText');
 
     if (bundleInfo.type === 'empty') {
         bundle.style.backgroundColor = 'transparent';
@@ -2478,6 +2632,22 @@ document.getElementById('closeBlockModal').addEventListener('click', () => {
     if (rotationInterval) {
         clearInterval(rotationInterval);
         rotationInterval = null;
+    }
+});
+
+// Block layout switch handler
+document.getElementById('blockLayoutSwitch').addEventListener('click', (e) => {
+    const btn = e.target.closest('.order-btn');
+    if (!btn || !btn.dataset.layout) return;
+    blockLayout = btn.dataset.layout;
+    document.querySelectorAll('#blockLayoutSwitch .order-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.layout === blockLayout);
+    });
+    saveSettings();
+    // Re-render if modal is open with a variant
+    if (currentVariantForExecution) {
+        buildBlockVisualization(currentVariantForExecution);
+        animateBlockBuild();
     }
 });
 

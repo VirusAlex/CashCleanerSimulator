@@ -179,12 +179,22 @@
                     <!-- Will be populated by JavaScript -->
                 </div>
                 </div>
-                <div id="partialPacksLegend" class="partial-packs-legend" style="display: none;">
-                </div>
+                <div id="orderLegend" class="order-legend"></div>
             </div>
             <div class="block-modal-footer">
-                    <button class="viz-btn execute-order-btn" id="executeOrderBtn" data-i18n="executeOrder">Execute Order</button>
-                    <button class="viz-btn" onclick="document.getElementById('blockModal').classList.remove('show')" data-i18n="closeDialog">Close</button>
+                    <div class="collected-progress" id="collectedProgress"></div>
+                    <div class="footer-buttons">
+                        <div class="display-order-switch" id="blockLayoutSwitch">
+                            <button type="button" class="order-btn active" data-layout="grouped" title="Group by denomination">
+                                <i class="fas fa-object-group"></i>
+                            </button>
+                            <button type="button" class="order-btn" data-layout="sequential" title="Sequential order">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <button class="viz-btn execute-order-btn" id="executeOrderBtn" data-i18n="executeOrder">Execute Order</button>
+                        <button class="viz-btn" onclick="document.getElementById('blockModal').classList.remove('show')" data-i18n="closeDialog">Close</button>
+                    </div>
             </div>
         </div>
     </div>
