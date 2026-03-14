@@ -19,11 +19,16 @@
 </script>
 <body>
     <div class="container">
-        <!-- Language Switcher -->
-        <div class="language-switcher">
-            <button class="lang-btn" data-lang="en">🇺🇸 EN</button>
-            <span class="lang-separator">|</span>
-            <button class="lang-btn" data-lang="ru">🇷🇺 RU</button>
+        <!-- Language Switcher + Tour -->
+        <div class="top-right-panel">
+            <div class="language-switcher">
+                <button class="lang-btn" data-lang="en">🇺🇸 EN</button>
+                <span class="lang-separator">|</span>
+                <button class="lang-btn" data-lang="ru">🇷🇺 RU</button>
+            </div>
+            <a class="tour-link" id="startTourBtn">
+                <span data-i18n="tourBtn">How to use?</span>
+            </a>
         </div>
 
         <!-- GitHub Link -->
@@ -51,8 +56,8 @@
                     <div class="form-group">
                         <label for="amount">
                             <span data-i18n="orderAmount">Order Amount</span>
-                            <span class="info-tooltip" data-tooltip-i18n="amountTooltip" data-tooltip="Amount must be divisible by 100">
-                                <i class="fas fa-info-circle"></i>
+                            <span class="help-hint" data-hint-i18n="amountTooltip" data-hint-target=".amount-input-container">
+                                <i class="fas fa-circle-question"></i>
                             </span>
                         </label>
                         <div class="amount-input-container">
@@ -62,7 +67,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label data-i18n="currency">Currency</label>
+                        <label>
+                            <span data-i18n="currency">Currency</span>
+                            <span class="help-hint" data-hint-i18n="currencyTooltip" data-hint-target="#currencyButtons">
+                                <i class="fas fa-circle-question"></i>
+                            </span>
+                        </label>
                         <div class="currency-buttons" id="currencyButtons">
                             <!-- Currency buttons will be populated by JavaScript -->
                         </div>
@@ -72,8 +82,8 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3>
                                 <span id="stockTitle" data-i18n="stockRemaining">Bundle Stock</span>
-                                <span class="info-tooltip" id="stockTooltip" data-tooltip-i18n="stockTooltip" data-tooltip="Leave empty for unlimited quantity">
-                                <i class="fas fa-info-circle"></i>
+                                <span class="help-hint" id="stockTooltip" data-hint-tour="stock">
+                                <i class="fas fa-circle-question"></i>
                             </span>
                         </h3>
                             <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
@@ -111,7 +121,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="maxVariants" data-i18n="variantsCount">Number of Variants</label>
+                        <label for="maxVariants">
+                            <span data-i18n="variantsCount">Number of Variants</span>
+                            <span class="help-hint" data-hint-i18n="variantsTooltip" data-hint-target="#maxVariants">
+                                <i class="fas fa-circle-question"></i>
+                            </span>
+                        </label>
                         <input type="number" id="maxVariants" min="1" max="100" value="10">
                     </div>
 
@@ -124,7 +139,11 @@
 
             <div class="results-panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                    <h2><i class="fas fa-chart-bar"></i> <span data-i18n="results">Results</span></h2>
+                    <h2><i class="fas fa-chart-bar"></i> <span data-i18n="results">Results</span>
+                        <span class="help-hint" id="resultsHelpHint" data-hint-tour="results" style="display: none;">
+                            <i class="fas fa-circle-question"></i>
+                        </span>
+                    </h2>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div class="display-order-switch" style="display: none;" id="displayOrderSwitch">
                             <button type="button" class="order-btn" data-order="denomination-first" title="50 × 30 bundles">
@@ -175,8 +194,13 @@
     <div class="block-modal" id="blockModal">
         <div class="block-modal-content">
             <div class="block-modal-header">
-                <div class="block-title" id="blockModalTitle" data-i18n="blockVisualization">Block Visualization</div>
-            <button class="block-modal-close" id="closeBlockModal">&times;</button>
+                <div class="block-title" id="blockModalTitle">
+                    <span data-i18n="blockVisualization">Block Visualization</span>
+                    <span class="help-hint" data-hint-tour="blockModal">
+                        <i class="fas fa-circle-question"></i>
+                    </span>
+                </div>
+                <button class="block-modal-close" id="closeBlockModal">&times;</button>
             </div>
             <div class="block-modal-body">
             <div class="block-visualization">
@@ -200,6 +224,19 @@
                         <button class="viz-btn execute-order-btn" id="executeOrderBtn" data-i18n="executeOrder">Execute Order</button>
                         <button class="viz-btn" onclick="document.getElementById('blockModal').classList.remove('show')" data-i18n="closeDialog">Close</button>
                     </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guided Tour -->
+    <div class="tour-backdrop" id="tourBackdrop"></div>
+    <div class="tour-tooltip" id="tourTooltip">
+        <div class="tour-text" id="tourText"></div>
+        <div class="tour-footer">
+            <span class="tour-counter" id="tourCounter"></span>
+            <div class="tour-buttons">
+                <button class="tour-skip-btn" id="tourSkipBtn" data-i18n="tourSkip">Skip tour</button>
+                <button class="tour-next-btn" id="tourNextBtn" data-i18n="tourNext">Next</button>
             </div>
         </div>
     </div>

@@ -202,13 +202,7 @@ function applyLanguage(lang) {
         }
     });
 
-    // Update tooltips
-    document.querySelectorAll('[data-tooltip-i18n]').forEach(element => {
-        const key = element.getAttribute('data-tooltip-i18n');
-        if (TRANSLATIONS[lang][key]) {
-            element.setAttribute('data-tooltip', TRANSLATIONS[lang][key]);
-        }
-    });
+    // No tooltip updates needed — help hints use tour-style popups now
 
     // Update page title
     document.title = TRANSLATIONS[lang].title;
@@ -510,21 +504,9 @@ function updateStockInputs() {
     const stockTooltip = document.getElementById('stockTooltip');
     
     if (assetType === 'coins') {
-        if (stockMode === 'bundles') {
-            stockTitle.textContent = t('rollStock');
-            stockTooltip.setAttribute('data-tooltip', t('stockTooltip'));
-        } else {
-            stockTitle.textContent = t('looseCoinStock');
-            stockTooltip.setAttribute('data-tooltip', t('stockTooltipBills'));
-        }
+        stockTitle.textContent = stockMode === 'bundles' ? t('rollStock') : t('looseCoinStock');
     } else {
-        if (stockMode === 'bundles') {
-            stockTitle.textContent = t('stockRemaining');
-            stockTooltip.setAttribute('data-tooltip', t('stockTooltip'));
-        } else {
-            stockTitle.textContent = t('stockRemainingBills');
-            stockTooltip.setAttribute('data-tooltip', t('stockTooltipBills'));
-        }
+        stockTitle.textContent = stockMode === 'bundles' ? t('stockRemaining') : t('stockRemainingBills');
     }
     
     // Create multi-currency table
@@ -901,6 +883,7 @@ function displayResults(data) {
     if (data.error) {
         displayOrderSwitch.style.display = 'none';
     document.getElementById('clearResultsBtn').style.display = 'none';
+    document.getElementById('resultsHelpHint').style.display = 'none';
         resultsDiv.innerHTML = `
             <div class="error">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -913,6 +896,7 @@ function displayResults(data) {
     // Show display order switch
     displayOrderSwitch.style.display = 'flex';
     document.getElementById('clearResultsBtn').style.display = '';
+    document.getElementById('resultsHelpHint').style.display = '';
     
     let html = '';
     
@@ -1154,6 +1138,7 @@ document.getElementById('calculatorForm').addEventListener('submit', (e) => {
     // Show initial loading state
     displayOrderSwitch.style.display = 'none';
     document.getElementById('clearResultsBtn').style.display = 'none';
+    document.getElementById('resultsHelpHint').style.display = 'none';
     resultsDiv.innerHTML = `
         <div class="success">
             <i class="fas fa-search"></i>
@@ -1353,6 +1338,7 @@ document.getElementById('calculatorForm').addEventListener('submit', (e) => {
                     // Show display order switch
                     displayOrderSwitch.style.display = 'flex';
     document.getElementById('clearResultsBtn').style.display = '';
+    document.getElementById('resultsHelpHint').style.display = '';
                     
                     // Update final status message
                     const statusDiv = resultsDiv.querySelector('.success, .error');
@@ -1421,6 +1407,7 @@ document.getElementById('calculatorForm').addEventListener('submit', (e) => {
             // Show display order switch
             displayOrderSwitch.style.display = 'flex';
     document.getElementById('clearResultsBtn').style.display = '';
+    document.getElementById('resultsHelpHint').style.display = '';
 
             // Update final status message
             const statusDiv = resultsDiv.querySelector('.success, .error');
@@ -1616,6 +1603,7 @@ document.addEventListener('click', (e) => {
         `;
         document.getElementById('displayOrderSwitch').style.display = 'none';
         document.getElementById('clearResultsBtn').style.display = 'none';
+    document.getElementById('resultsHelpHint').style.display = 'none';
     }
 });
 
@@ -2151,7 +2139,7 @@ function showBlockVisualization(variant) {
     currentVariantForExecution = variant;
     
     let titleText = `${formatCurrency(variant.total_value, lastResults.currency)}`;
-    title.textContent = titleText;
+    title.querySelector('[data-i18n]').textContent = titleText;
     
     // Check if order can be executed (sufficient stock)
     const canExecute = checkOrderExecutable(variant);
@@ -2686,10 +2674,321 @@ document.getElementById('clearResultsBtn').addEventListener('click', () => {
     `;
     document.getElementById('displayOrderSwitch').style.display = 'none';
     document.getElementById('clearResultsBtn').style.display = 'none';
+    document.getElementById('resultsHelpHint').style.display = 'none';
     const amountField = document.getElementById('amount');
     amountField.focus();
     amountField.select();
 });
+
+// ===== Guided Tour =====
+const TOUR_STEPS = [
+    { target: '.amount-input-container', text: 'tourStep1' },
+    { target: '#currencyButtons', text: 'tourStep2' },
+    { target: '#assetTypeSwitch', text: 'tourStep3' },
+    { target: '#stockModeSwitch', text: 'tourStep4' },
+    { target: '#stockMultiCurrency', text: 'tourStep5', position: 'top' },
+    { target: '.enabled-cell', text: 'tourStep6' },
+    { target: '#calculateBtn', text: 'tourStep7' },
+    { target: '.results-panel', text: 'tourStep8' },
+];
+
+let tourStep = 0;
+let tourPrevHighlight = null;
+
+function startTour() {
+    tourStep = 0;
+    document.getElementById('tourBackdrop').classList.add('active');
+    document.getElementById('tourTooltip').classList.add('active');
+    showTourStep();
+}
+
+function endTour() {
+    document.getElementById('tourBackdrop').classList.remove('active');
+    document.getElementById('tourTooltip').classList.remove('active');
+    tourPrevHighlight = null;
+    localStorage.setItem('cash-cleaner-tour-done', '1');
+}
+
+function showTourStep() {
+    if (tourStep >= TOUR_STEPS.length) {
+        endTour();
+        return;
+    }
+
+    const step = TOUR_STEPS[tourStep];
+    const el = document.querySelector(step.target);
+    if (!el) { tourStep++; showTourStep(); return; }
+
+    // Scroll target into view
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    tourPrevHighlight = el;
+
+    // Position backdrop spotlight over target (with animation)
+    const backdrop = document.getElementById('tourBackdrop');
+    backdrop.classList.add('animating');
+    positionBackdrop(el);
+
+    // Update tooltip text
+    document.getElementById('tourText').textContent = t(step.text);
+
+    // Counter
+    document.getElementById('tourCounter').textContent = `${tourStep + 1} / ${TOUR_STEPS.length}`;
+
+    // Button text
+    const nextBtn = document.getElementById('tourNextBtn');
+    if (tourStep === TOUR_STEPS.length - 1) {
+        nextBtn.textContent = t('tourDone');
+    } else {
+        nextBtn.textContent = t('tourNext');
+    }
+    document.getElementById('tourSkipBtn').textContent = t('tourSkip');
+
+    // Position tooltip
+    requestAnimationFrame(() => positionTooltip(el));
+}
+
+function positionBackdrop(el) {
+    const backdrop = document.getElementById('tourBackdrop');
+    const rect = el.getBoundingClientRect();
+    const pad = 4;
+    backdrop.style.top = (rect.top - pad) + 'px';
+    backdrop.style.left = (rect.left - pad) + 'px';
+    backdrop.style.width = (rect.width + pad * 2) + 'px';
+    backdrop.style.height = (rect.height + pad * 2) + 'px';
+}
+
+function positionTooltip(el) {
+    const tooltip = document.getElementById('tourTooltip');
+    const rect = el.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const gap = 12;
+    const preferred = TOUR_STEPS[tourStep]?.position;
+
+    let top, left;
+
+    const fitsAbove = rect.top - gap - tooltipRect.height > 0;
+    const fitsBelow = rect.bottom + gap + tooltipRect.height < window.innerHeight;
+
+    if (preferred === 'top' && fitsAbove) {
+        top = rect.top - gap - tooltipRect.height;
+    } else if (preferred === 'bottom' && fitsBelow) {
+        top = rect.bottom + gap;
+    } else if (fitsBelow) {
+        top = rect.bottom + gap;
+    } else if (fitsAbove) {
+        top = rect.top - gap - tooltipRect.height;
+    } else {
+        top = Math.max(10, (window.innerHeight - tooltipRect.height) / 2);
+    }
+
+    // Horizontal: center with target, clamp to viewport
+    left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+    left = Math.max(10, Math.min(left, window.innerWidth - tooltipRect.width - 10));
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+}
+
+document.getElementById('tourNextBtn').addEventListener('click', () => {
+    if (hintActive && miniTourSteps) {
+        miniTourStep++;
+        showMiniTourStep();
+        return;
+    }
+    if (hintActive) { hideHint(); return; }
+    tourStep++;
+    showTourStep();
+});
+
+document.getElementById('tourSkipBtn').addEventListener('click', endTour);
+
+// Close tour on Escape or backdrop click
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('tourBackdrop').classList.contains('active')) {
+        endTour();
+    }
+});
+document.getElementById('tourBackdrop').addEventListener('click', () => {
+    if (hintActive) hideHint();
+    else endTour();
+});
+
+document.getElementById('startTourBtn').addEventListener('click', startTour);
+
+// Help hints — single tooltip or mini-tour
+let hintActive = false;
+let miniTourSteps = null;
+let miniTourStep = 0;
+
+function getStockMiniTour() {
+    const textKey = stockMode === 'bundles' ? 'stockTooltip' : 'stockTooltipBills';
+    return [
+        { target: '#assetTypeSwitch', text: 'hintAssetType' },
+        { target: '#stockModeSwitch', text: 'hintStockMode' },
+        { target: '#denominationOrderSwitch', text: 'hintDenomOrder' },
+        { target: '#stockMultiCurrency', text: textKey, position: 'top' },
+        { target: '.enabled-cell', text: 'hintStockCheckbox' },
+    ];
+}
+
+const RESULTS_MINI_TOUR = [
+    { target: '.variant', text: 'hintResultVariant' },
+    { target: '#displayOrderSwitch', text: 'hintDisplayOrder' },
+    { target: '#clearResultsBtn', text: 'hintClearResults' },
+];
+
+const BLOCK_MODAL_MINI_TOUR = [
+    { target: '.block-3d', text: 'hintBlockViz' },
+    { target: '.block-container', text: 'hintBlockClick' },
+    { target: '#orderLegend', text: 'hintOrderLegend' },
+    { target: '#collectedProgress', text: 'hintCollectedProgress' },
+    { target: '#blockLayoutSwitch', text: 'hintBlockLayout' },
+    { target: '#executeOrderBtn', text: 'hintExecuteOrder' },
+];
+
+const MINI_TOURS = {
+    stock: getStockMiniTour,
+    results: () => RESULTS_MINI_TOUR,
+    blockModal: () => BLOCK_MODAL_MINI_TOUR,
+};
+
+function showHint(hintEl) {
+    const tourKey = hintEl.getAttribute('data-hint-tour');
+    if (tourKey && MINI_TOURS[tourKey]) {
+        const steps = typeof MINI_TOURS[tourKey] === 'function' ? MINI_TOURS[tourKey]() : MINI_TOURS[tourKey];
+        startMiniTour(steps);
+        return;
+    }
+
+    const key = hintEl.getAttribute('data-hint-i18n');
+    if (!key) return;
+
+    hintActive = true;
+    miniTourSteps = null;
+    const targetSelector = hintEl.getAttribute('data-hint-target');
+    const target = targetSelector ? document.querySelector(targetSelector) : hintEl.parentElement;
+
+    const backdrop = document.getElementById('tourBackdrop');
+    const tooltip = document.getElementById('tourTooltip');
+
+    backdrop.classList.add('active', 'animating');
+    tooltip.classList.add('active');
+
+    document.getElementById('tourText').textContent = t(key);
+    document.getElementById('tourCounter').textContent = '';
+    document.getElementById('tourNextBtn').textContent = t('tourDone');
+    document.getElementById('tourSkipBtn').style.display = 'none';
+
+    tourPrevHighlight = target;
+    positionBackdrop(target);
+    requestAnimationFrame(() => positionTooltip(target));
+}
+
+function startMiniTour(steps) {
+    hintActive = true;
+    miniTourSteps = steps;
+    miniTourStep = 0;
+
+    document.getElementById('tourBackdrop').classList.add('active', 'animating');
+    document.getElementById('tourTooltip').classList.add('active');
+    document.getElementById('tourSkipBtn').style.display = '';
+
+    showMiniTourStep();
+}
+
+function showMiniTourStep() {
+    if (miniTourStep >= miniTourSteps.length) {
+        hideHint();
+        return;
+    }
+
+    const step = miniTourSteps[miniTourStep];
+    const el = document.querySelector(step.target);
+    if (!el) { miniTourStep++; showMiniTourStep(); return; }
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    tourPrevHighlight = el;
+    const backdrop = document.getElementById('tourBackdrop');
+    backdrop.classList.add('animating');
+    positionBackdrop(el);
+
+    document.getElementById('tourText').textContent = t(step.text);
+    document.getElementById('tourCounter').textContent = `${miniTourStep + 1} / ${miniTourSteps.length}`;
+
+    const nextBtn = document.getElementById('tourNextBtn');
+    nextBtn.textContent = miniTourStep === miniTourSteps.length - 1 ? t('tourDone') : t('tourNext');
+    document.getElementById('tourSkipBtn').textContent = t('tourSkip');
+
+    // Store position preference for positionTooltip
+    miniTourSteps._currentPosition = step.position;
+    requestAnimationFrame(() => {
+        positionTooltipWithPref(el, step.position);
+    });
+}
+
+function positionTooltipWithPref(el, preferred) {
+    const tooltip = document.getElementById('tourTooltip');
+    const rect = el.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const gap = 12;
+
+    let top, left;
+    const fitsAbove = rect.top - gap - tooltipRect.height > 0;
+    const fitsBelow = rect.bottom + gap + tooltipRect.height < window.innerHeight;
+
+    if (preferred === 'top' && fitsAbove) {
+        top = rect.top - gap - tooltipRect.height;
+    } else if (preferred === 'bottom' && fitsBelow) {
+        top = rect.bottom + gap;
+    } else if (fitsBelow) {
+        top = rect.bottom + gap;
+    } else if (fitsAbove) {
+        top = rect.top - gap - tooltipRect.height;
+    } else {
+        top = Math.max(10, (window.innerHeight - tooltipRect.height) / 2);
+    }
+
+    left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+    left = Math.max(10, Math.min(left, window.innerWidth - tooltipRect.width - 10));
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+}
+
+function hideHint() {
+    if (!hintActive) return;
+    hintActive = false;
+    miniTourSteps = null;
+    miniTourStep = 0;
+    document.getElementById('tourBackdrop').classList.remove('active', 'animating');
+    document.getElementById('tourTooltip').classList.remove('active');
+    document.getElementById('tourSkipBtn').style.display = '';
+    tourPrevHighlight = null;
+}
+
+document.addEventListener('click', (e) => {
+    const hint = e.target.closest('.help-hint');
+    if (hint) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (hintActive) hideHint();
+        else showHint(hint);
+        return;
+    }
+    if (hintActive && !e.target.closest('.tour-tooltip')) hideHint();
+});
+
+// Keep backdrop and tooltip in sync during scroll (no transition)
+window.addEventListener('scroll', () => {
+    if (tourPrevHighlight && document.getElementById('tourBackdrop').classList.contains('active')) {
+        const backdrop = document.getElementById('tourBackdrop');
+        backdrop.classList.remove('animating');
+        positionBackdrop(tourPrevHighlight);
+        positionTooltip(tourPrevHighlight);
+    }
+}, true);
 
 // Initialize
 initLanguage();
@@ -2702,3 +3001,8 @@ updateDenominationOrderButtons();
 updateAssetTypeButtons();
 updateStockInputs();
 updateCurrencyButtons();
+
+// Auto-start tour on first visit
+if (!localStorage.getItem('cash-cleaner-tour-done')) {
+    setTimeout(startTour, 500);
+}

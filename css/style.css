@@ -844,10 +844,18 @@ body.currency-gbp.asset-coins {
 .denom-purple { background-color: var(--denom-purple); }
 
 /* Language switcher */
-.language-switcher {
+.top-right-panel {
     position: absolute;
     top: 20px;
     right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    z-index: 10;
+}
+
+.language-switcher {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -1508,9 +1516,11 @@ body.currency-gbp.asset-coins {
         text-align: center;
     }
 
-    .language-switcher {
+    .top-right-panel {
         position: static;
+        flex-direction: row;
         justify-content: center;
+        align-items: center;
         margin-bottom: 4px;
         order: 1;
     }
@@ -1587,28 +1597,17 @@ body.currency-gbp.asset-coins {
     }
 }
 
-.info-tooltip {
+.help-hint {
     display: inline-block;
-    position: relative;
     margin-left: 5px;
-    color: var(--text-secondary);
-    cursor: help;
+    color: var(--primary-color);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-.info-tooltip:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    background: var(--text-primary);
-    color: white;
-    padding: 8px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    z-index: 1000;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: 5px;
+.help-hint:hover {
+    opacity: 1;
 }
 
 .github-link {
@@ -1766,4 +1765,122 @@ body.currency-gbp.asset-coins {
 .order-btn.active {
     background: var(--primary-color);
     color: white;
+}
+
+/* Tour link */
+.tour-link {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.tour-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+    color: white;
+}
+
+/* Guided Tour */
+.tour-backdrop {
+    display: none;
+    position: fixed;
+    z-index: 10001;
+    border-radius: 8px;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+}
+
+.tour-backdrop.animating {
+    transition: top 0.15s ease, left 0.15s ease, width 0.15s ease, height 0.15s ease;
+}
+
+.tour-backdrop.active {
+    display: block;
+}
+
+.tour-tooltip {
+    display: none;
+    position: fixed;
+    z-index: 10002;
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    max-width: 320px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 1);
+    animation: tourFadeIn 0.2s ease;
+}
+
+.tour-tooltip.active {
+    display: block;
+}
+
+@keyframes tourFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tour-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.tour-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tour-counter {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.tour-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.tour-skip-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+}
+
+.tour-skip-btn:hover {
+    color: var(--text-primary);
+}
+
+.tour-next-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.tour-next-btn:hover {
+    background: var(--primary-hover);
 }
