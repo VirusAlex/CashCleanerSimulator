@@ -1541,6 +1541,13 @@ body.currency-gbp.asset-coins {
 
     .input-panel, .results-panel {
         padding: 20px;
+        overflow: hidden;
+    }
+
+    .results-panel > div:first-child,
+    .stock-section > div:first-child {
+        flex-wrap: wrap;
+        gap: 8px;
     }
 
     .stock-table .stock-cell input {
