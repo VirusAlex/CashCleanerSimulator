@@ -79,10 +79,6 @@ function getCurrentBlockSize() {
     return assetType === 'coins' ? COIN_BLOCK_SIZE : BLOCK_SIZE;
 }
 
-function getCurrentDenominations(currency) {
-    const cur = currency || currentCurrency;
-    return assetType === 'coins' ? COIN_CURRENCIES[cur] : CURRENCIES[cur];
-}
 
 // Format coin denomination for display (e.g. 0.50 -> "0.50", not "0.5")
 function formatDenom(denom, currency) {
@@ -2191,6 +2187,104 @@ function showBlockVisualization(variant) {
 // Get flat array of all bundles/rolls from variant breakdown,
 // reordered for convenient assembly: homogeneous blocks first,
 // then within mixed blocks: homogeneous layers, then homogeneous stacks, then leftovers.
+// Find the denomination order that minimizes:
+// 1) total switches, 2) mixed layers, 3) mixed stacks, 4) max intra-stack switches.
+// Tries all permutations (≤4 denoms = ≤24 perms, instant).
+function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize) {
+    if (remaining.length <= 1) return remaining;
+
+    const layerSize = stackSize * 3; // 15 = 3 stacks per layer
+    blockSize = blockSize || layerSize * 2; // default 30
+
+    function getPerms(arr) {
+        if (arr.length <= 1) return [arr];
+        const result = [];
+        for (let i = 0; i < arr.length; i++) {
+            const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+            for (const p of getPerms(rest)) result.push([arr[i], ...p]);
+        }
+        return result;
+    }
+
+    function scorePerm(perm) {
+        const seq = [];
+        for (const item of perm) {
+            const n = Math.min(item.count, slotsLeft - seq.length);
+            for (let i = 0; i < n; i++) seq.push(item.denom);
+            if (seq.length >= slotsLeft) break;
+        }
+
+        let switches = 0;
+        for (let i = 1; i < seq.length; i++) {
+            if (seq[i] !== seq[i - 1]) switches++;
+        }
+
+        // Score layers and stacks using block-relative positions
+        let mixedLayers = 0, mixedStacks = 0, maxIntraStack = 0, mixedSpread = 0;
+        const totalLen = startPos + seq.length;
+
+        for (let absPos = startPos; absPos < totalLen; ) {
+            // Determine which block this position is in
+            const blockIdx = Math.floor(absPos / blockSize);
+            const blockStart = blockIdx * blockSize;
+            const blockEnd = blockStart + blockSize;
+
+            // Check layers within this block (0-14, 15-29)
+            for (let layer = 0; layer < 2; layer++) {
+                const lStart = blockStart + layer * layerSize;
+                const lEnd = lStart + layerSize;
+                if (lStart >= totalLen || lEnd <= startPos) continue;
+                const ds = new Set();
+                if (lStart < startPos) ds.add(-1); // prev denom before our sequence
+                for (let p = Math.max(lStart, startPos); p < Math.min(lEnd, totalLen); p++) {
+                    ds.add(seq[p - startPos]);
+                }
+                if (ds.size > 1) mixedLayers++;
+            }
+
+            // Check stacks within this block
+            let firstMixed = -1, lastMixed = -1;
+            for (let s = 0; s < 6; s++) {
+                const sStart = blockStart + s * stackSize;
+                const sEnd = sStart + stackSize;
+                if (sStart >= totalLen || sEnd <= startPos) continue;
+                const ds = new Set();
+                let intra = 0, prevD = (sStart < startPos) ? -1 : null;
+                if (sStart < startPos) ds.add(-1);
+                for (let p = Math.max(sStart, startPos); p < Math.min(sEnd, totalLen); p++) {
+                    const d = seq[p - startPos];
+                    ds.add(d);
+                    if (prevD !== null && d !== prevD) intra++;
+                    prevD = d;
+                }
+                if (ds.size > 1) {
+                    mixedStacks++;
+                    if (firstMixed === -1) firstMixed = s;
+                    lastMixed = s;
+                }
+                if (intra > maxIntraStack) maxIntraStack = intra;
+            }
+            if (firstMixed !== -1) mixedSpread += lastMixed - firstMixed;
+
+            absPos = blockEnd; // move to next block
+        }
+
+        return switches * 1000000 + mixedLayers * 100000
+             + mixedStacks * 1000 + maxIntraStack * 100 + mixedSpread;
+    }
+
+    const perms = getPerms(remaining);
+    let best = remaining, bestScore = Infinity;
+    for (const perm of perms) {
+        const score = scorePerm(perm);
+        if (score < bestScore) {
+            bestScore = score;
+            best = perm;
+        }
+    }
+    return best;
+}
+
 function getAllBundlesFlat(variant) {
     const bSize = getCurrentBundleSize();
     const blockSize = getCurrentBlockSize();
@@ -2232,22 +2326,6 @@ function getAllBundlesFlat(variant) {
 
     const denoms = Object.keys(denomCounts).map(Number).sort((a, b) => b - a);
 
-    // Helper: extract N items from denom array if available
-    function extractGroup(d, size) {
-        const arr = denomCounts[d];
-        if (arr && arr.length >= size) return arr.splice(0, size);
-        return null;
-    }
-
-    // 2. Extract full homogeneous blocks (blockSize = 30)
-    const homoBlocks = [];
-    denoms.forEach(d => {
-        let group;
-        while ((group = extractGroup(d, blockSize))) homoBlocks.push(group);
-    });
-
-    // 3. Build mixed blocks from remainder
-    // Collect all remaining bundles with counts
     const remainByDenom = {};
     denoms.forEach(d => {
         if (denomCounts[d] && denomCounts[d].length > 0) {
@@ -2255,50 +2333,52 @@ function getAllBundlesFlat(variant) {
         }
     });
 
-    const mixedBlocks = [];
-    const totalRemaining = () => {
-        let n = denoms.reduce((s, d) => s + (remainByDenom[d] ? remainByDenom[d].length : 0), 0);
-        return n + partials.length;
-    };
+    // Build the full sequence: start with most-bundles denomination,
+    // then find optimal order for remaining denoms across ALL blocks at once.
+    const fullSeq = [];
+    const totalBundles = denoms.reduce((s, d) => s + (remainByDenom[d] ? remainByDenom[d].length : 0), 0);
 
-    while (totalRemaining() > 0) {
-        const block = []; // will be exactly blockSize slots (or fewer for last block)
-        const target = Math.min(blockSize, totalRemaining());
-
-        // 3a. Fill with homogeneous layers (layerSize = 15)
-        for (const d of denoms) {
-            while (block.length + layerSize <= target && remainByDenom[d] && remainByDenom[d].length >= layerSize) {
-                block.push(...remainByDenom[d].splice(0, layerSize));
-            }
+    // Start with denomination that has the most bundles
+    let startDenom = null;
+    const available = denoms.filter(d => remainByDenom[d] && remainByDenom[d].length > 0);
+    if (available.length > 0) {
+        available.sort((a, b) => remainByDenom[b].length - remainByDenom[a].length || b - a);
+        startDenom = available[0];
+    }
+    if (startDenom && remainByDenom[startDenom] && remainByDenom[startDenom].length > 0) {
+        while (remainByDenom[startDenom] && remainByDenom[startDenom].length > 0) {
+            fullSeq.push(remainByDenom[startDenom].shift());
         }
-
-        // 3b. Fill with homogeneous stacks (stackSize = 5)
-        for (const d of denoms) {
-            while (block.length + stackSize <= target && remainByDenom[d] && remainByDenom[d].length >= stackSize) {
-                block.push(...remainByDenom[d].splice(0, stackSize));
-            }
-        }
-
-        // 3c. Fill remaining slots with whatever's left (by denom desc)
-        for (const d of denoms) {
-            while (block.length < target && remainByDenom[d] && remainByDenom[d].length > 0) {
-                block.push(remainByDenom[d].shift());
-            }
-        }
-
-        // 3d. Append partials at the end
-        while (block.length < target && partials.length > 0) {
-            block.push(partials.shift());
-        }
-
-        mixedBlocks.push(block);
     }
 
-    // 4. Flatten: homogeneous blocks first, then mixed blocks
-    const result = [];
-    homoBlocks.forEach(b => result.push(...b));
-    mixedBlocks.forEach(b => result.push(...b));
+    // Find optimal order for the remaining denominations across all blocks
+    const remaining = denoms
+        .filter(d => remainByDenom[d] && remainByDenom[d].length > 0)
+        .map(d => ({ denom: d, count: remainByDenom[d].length }));
 
+    if (remaining.length > 0) {
+        const bestOrder = findBestDenomOrder(fullSeq.length, remaining, totalBundles - fullSeq.length, stackSize, blockSize);
+        for (const item of bestOrder) {
+            while (remainByDenom[item.denom] && remainByDenom[item.denom].length > 0) {
+                fullSeq.push(remainByDenom[item.denom].shift());
+            }
+        }
+    }
+
+    // Append partials at the end
+    while (partials.length > 0) {
+        fullSeq.push(partials.shift());
+    }
+
+    // Split into blocks
+    const mixedBlocks = [];
+    for (let i = 0; i < fullSeq.length; i += blockSize) {
+        mixedBlocks.push(fullSeq.slice(i, i + blockSize));
+    }
+
+    // Flatten all blocks
+    const result = [];
+    mixedBlocks.forEach(b => result.push(...b));
     return result;
 }
 
@@ -2429,6 +2509,19 @@ function buildBlockVisualization(variant) {
 
         block3d.appendChild(blockContainer);
     }
+
+    // Store compact layout JSON for debugging
+    const allBundles = getAllBundlesFlat(variant);
+    const layoutJson = [];
+    for (let b = 0; b < numBlocks; b++) {
+        const blockBundles = allBundles.slice(b * blockSize, (b + 1) * blockSize);
+        const stacks = [];
+        for (let s = 0; s < Math.ceil(blockBundles.length / 5); s++) {
+            stacks.push(blockBundles.slice(s * 5, s * 5 + 5).map(x => x.type === 'partial' ? x.denomination + 'p' : x.denomination));
+        }
+        layoutJson.push(stacks);
+    }
+    block3d.dataset.layout = JSON.stringify(layoutJson);
 
     // Build order legend (full breakdown including partial details)
     buildOrderLegend(variant);
