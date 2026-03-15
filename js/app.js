@@ -2220,8 +2220,8 @@ function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize
         }
 
         // Score layers and stacks using block-relative positions
-        let mixedLayers = 0, mixedStacks = 0, maxIntraStack = 0, mixedSpread = 0;
-        let firstMixedBlock = -1, lastMixedBlock = -1;
+        let mixedLayers = 0, mixedStacks = 0, maxIntraStack = 0;
+        let globalFirstMixed = -1, globalLastMixed = -1;
         const totalLen = startPos + seq.length;
 
         for (let absPos = startPos; absPos < totalLen; ) {
@@ -2244,7 +2244,6 @@ function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize
             }
 
             // Check stacks within this block
-            let firstMixed = -1, lastMixed = -1;
             for (let s = 0; s < 6; s++) {
                 const sStart = blockStart + s * stackSize;
                 const sEnd = sStart + stackSize;
@@ -2260,25 +2259,21 @@ function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize
                 }
                 if (ds.size > 1) {
                     mixedStacks++;
-                    if (firstMixed === -1) firstMixed = s;
-                    lastMixed = s;
+                    const globalIdx = blockIdx * 6 + s;
+                    if (globalFirstMixed === -1) globalFirstMixed = globalIdx;
+                    globalLastMixed = globalIdx;
                 }
                 if (intra > maxIntraStack) maxIntraStack = intra;
-            }
-            if (firstMixed !== -1) {
-                mixedSpread += lastMixed - firstMixed;
-                if (firstMixedBlock === -1) firstMixedBlock = blockIdx;
-                lastMixedBlock = blockIdx;
             }
 
             absPos = blockEnd; // move to next block
         }
 
-        const blockSpread = firstMixedBlock !== -1 ? lastMixedBlock - firstMixedBlock : 0;
+        const globalSpread = globalFirstMixed !== -1 ? globalLastMixed - globalFirstMixed : 0;
 
         return switches * 10000000 + mixedLayers * 1000000
-             + mixedStacks * 100000 + blockSpread * 10000
-             + maxIntraStack * 100 + mixedSpread;
+             + mixedStacks * 100000 + globalSpread * 1000
+             + maxIntraStack;
     }
 
     const perms = getPerms(remaining);

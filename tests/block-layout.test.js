@@ -29,8 +29,8 @@ function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize
         for (let i = 1; i < seq.length; i++) {
             if (seq[i] !== seq[i - 1]) switches++;
         }
-        let mixedLayers = 0, mixedStacks = 0, maxIntraStack = 0, mixedSpread = 0;
-        let firstMixedBlock = -1, lastMixedBlock = -1;
+        let mixedLayers = 0, mixedStacks = 0, maxIntraStack = 0;
+        let globalFirstMixed = -1, globalLastMixed = -1;
         const totalLen = startPos + seq.length;
         for (let absPos = startPos; absPos < totalLen; ) {
             const blockIdx = Math.floor(absPos / blockSize);
@@ -47,7 +47,6 @@ function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize
                 }
                 if (ds.size > 1) mixedLayers++;
             }
-            let firstMixed = -1, lastMixed = -1;
             for (let s = 0; s < 6; s++) {
                 const sStart = blockStart + s * stackSize;
                 const sEnd = sStart + stackSize;
@@ -63,22 +62,18 @@ function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize
                 }
                 if (ds.size > 1) {
                     mixedStacks++;
-                    if (firstMixed === -1) firstMixed = s;
-                    lastMixed = s;
+                    const globalIdx = blockIdx * 6 + s;
+                    if (globalFirstMixed === -1) globalFirstMixed = globalIdx;
+                    globalLastMixed = globalIdx;
                 }
                 if (intra > maxIntraStack) maxIntraStack = intra;
             }
-            if (firstMixed !== -1) {
-                mixedSpread += lastMixed - firstMixed;
-                if (firstMixedBlock === -1) firstMixedBlock = blockIdx;
-                lastMixedBlock = blockIdx;
-            }
             absPos = blockEnd;
         }
-        const blockSpread = firstMixedBlock !== -1 ? lastMixedBlock - firstMixedBlock : 0;
+        const globalSpread = globalFirstMixed !== -1 ? globalLastMixed - globalFirstMixed : 0;
         return switches * 10000000 + mixedLayers * 1000000
-             + mixedStacks * 100000 + blockSpread * 10000
-             + maxIntraStack * 100 + mixedSpread;
+             + mixedStacks * 100000 + globalSpread * 1000
+             + maxIntraStack;
     }
     const perms = getPerms(remaining);
     let best = remaining, bestScore = Infinity;
@@ -547,6 +542,60 @@ describe('USD $125,000 — minimize transitions within stacks', () => {
             const stack = result.slice(s * 5, s * 5 + 5);
             expect(countSwitches(stack)).toBeLessThanOrEqual(1);
         }
+    });
+});
+
+// ============================================================
+// 56×€50 + 26×€20 + 8×€10 = 90 bundles, 3 blocks
+// Mixed stacks should be adjacent (minimal global spread).
+// Order [10,20] puts mixed stacks at block 2 last + block 3 first (spread=1).
+// Order [20,10] would put them at block 2 last + block 3 stack 4 (spread=5).
+// ============================================================
+describe('Minimize global spread of mixed stacks across blocks', () => {
+    const variant = {
+        type: 'ideal',
+        total_value: 370000,
+        breakdown: [
+            { denomination: 50, bundles: 56 },
+            { denomination: 20, bundles: 26 },
+            { denomination: 10, bundles: 8 },
+        ]
+    };
+
+    it('should produce 90 bundles in 3 blocks', () => {
+        const result = layoutBlocks(variant);
+        expect(result.length).toBe(90);
+    });
+
+    it('should have 2 switches total', () => {
+        const result = layoutBlocks(variant);
+        expect(countSwitches(result)).toBe(2);
+    });
+
+    it('mixed stacks should be adjacent across blocks (global spread ≤ 1)', () => {
+        const result = layoutBlocks(variant);
+        // Find all mixed stacks globally
+        const mixedIndices = [];
+        for (let s = 0; s < result.length / 5; s++) {
+            const stack = result.slice(s * 5, s * 5 + 5);
+            if (countSwitches(stack) > 0) mixedIndices.push(s);
+        }
+        const spread = mixedIndices.length > 0
+            ? mixedIndices[mixedIndices.length - 1] - mixedIndices[0]
+            : 0;
+        expect(spread).toBeLessThanOrEqual(1);
+    });
+
+    it('after €50, should pick €10 before €20 (smaller group first for tighter spread)', () => {
+        const result = layoutBlocks(variant);
+        const denoms = result.map(b => b.denomination);
+        // Find where 50 ends
+        let endOf50 = 0;
+        for (let i = 0; i < denoms.length; i++) {
+            if (denoms[i] === 50) endOf50 = i;
+        }
+        // Next denomination after 50 should be 10
+        expect(denoms[endOf50 + 1]).toBe(10);
     });
 });
 
