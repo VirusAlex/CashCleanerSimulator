@@ -2221,6 +2221,7 @@ function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize
 
         // Score layers and stacks using block-relative positions
         let mixedLayers = 0, mixedStacks = 0, maxIntraStack = 0, mixedSpread = 0;
+        let firstMixedBlock = -1, lastMixedBlock = -1;
         const totalLen = startPos + seq.length;
 
         for (let absPos = startPos; absPos < totalLen; ) {
@@ -2264,13 +2265,20 @@ function findBestDenomOrder(startPos, remaining, slotsLeft, stackSize, blockSize
                 }
                 if (intra > maxIntraStack) maxIntraStack = intra;
             }
-            if (firstMixed !== -1) mixedSpread += lastMixed - firstMixed;
+            if (firstMixed !== -1) {
+                mixedSpread += lastMixed - firstMixed;
+                if (firstMixedBlock === -1) firstMixedBlock = blockIdx;
+                lastMixedBlock = blockIdx;
+            }
 
             absPos = blockEnd; // move to next block
         }
 
-        return switches * 1000000 + mixedLayers * 100000
-             + mixedStacks * 1000 + maxIntraStack * 100 + mixedSpread;
+        const blockSpread = firstMixedBlock !== -1 ? lastMixedBlock - firstMixedBlock : 0;
+
+        return switches * 10000000 + mixedLayers * 1000000
+             + mixedStacks * 100000 + blockSpread * 10000
+             + maxIntraStack * 100 + mixedSpread;
     }
 
     const perms = getPerms(remaining);
