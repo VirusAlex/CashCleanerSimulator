@@ -155,6 +155,9 @@ function updateStockSubtotals() {
 // Current language
 let currentLang = 'en';
 
+// Current theme: 'light' or 'dark'
+let currentTheme = 'light';
+
 // Store last results to re-render on language change
 let lastResults = null;
 
@@ -178,11 +181,34 @@ function detectBrowserLanguage() {
     return 'en'; // Default to English
 }
 
+// Detect OS theme preference
+function detectSystemTheme() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+}
+
+// Apply theme
+function applyTheme(theme) {
+    currentTheme = theme;
+    document.body.dataset.theme = theme;
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) {
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        btn.title = t(theme === 'dark' ? 'themeLight' : 'themeDark');
+    }
+}
+
 // Initialize language
 function initLanguage() {
     // Load all settings first
     loadSettings();
     applyLanguage(currentLang);
+    applyTheme(currentTheme);
 }
 
 // Apply language
@@ -207,7 +233,13 @@ function applyLanguage(lang) {
 
     // Update page title
     document.title = TRANSLATIONS[lang].title;
-    
+
+    // Update theme toggle button title (depends on current theme + language)
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) {
+        themeBtn.title = t(currentTheme === 'dark' ? 'themeLight' : 'themeDark');
+    }
+
     // Re-render last results if they exist
     if (lastResults) {
         displayResults(lastResults);
@@ -232,7 +264,8 @@ function saveSettings() {
         denominationOrder: denominationOrder,
         language: currentLang,
         assetType: assetType,
-        blockLayout: blockLayout
+        blockLayout: blockLayout,
+        theme: currentTheme
     };
     localStorage.setItem('cash-cleaner-settings', JSON.stringify(settings));
 }
@@ -252,13 +285,16 @@ function loadSettings() {
             if (settings.language) {
                 currentLang = settings.language;
             }
+            currentTheme = settings.theme || detectSystemTheme();
         } else {
-            // First time user - detect browser language
+            // First time user - detect browser language and OS theme
             currentLang = detectBrowserLanguage();
+            currentTheme = detectSystemTheme();
         }
     } catch (e) {
         console.warn('Failed to load settings:', e);
         currentLang = detectBrowserLanguage();
+        currentTheme = detectSystemTheme();
     }
 }
 
@@ -1550,6 +1586,14 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
     });
 });
 
+// Theme toggle handler
+document.getElementById('themeToggleBtn').addEventListener('click', () => {
+    const next = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    saveSettings();
+    track('switch_theme', { theme: next });
+});
+
 
 
 // Button event handlers using event delegation
@@ -2821,6 +2865,7 @@ const TOUR_STEPS = [
     { target: '.enabled-cell', text: 'tourStep6' },
     { target: '#calculateBtn', text: 'tourStep7' },
     { target: '.results-panel', text: 'tourStep8' },
+    { target: '#themeToggleBtn', text: 'tourStep9' },
 ];
 
 let tourStep = 0;
