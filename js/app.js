@@ -720,6 +720,13 @@ function createCurrencyButtons() {
         `;
         container.appendChild(button);
         
+        // Add second submission method
+        button.addEventListener('click', () => {
+            if ( currency.code === currentCurrency ) {
+                handleFormSubmission();
+            }
+        });
+        
         // Add event listener
         button.addEventListener('click', () => {
             currentCurrency = currency.code;
@@ -1065,9 +1072,13 @@ function displayResults(data) {
     updateDisplayOrderButtons();
 }
 
-// Form submission handler
+// add form submission to calculate button
 document.getElementById('calculatorForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    handleFormSubmission();
+})
+// Form submission handler
+function handleFormSubmission () {
     track('calculate', { currency: currentCurrency, asset_type: assetType, stock_mode: stockMode, amount: document.getElementById('amount').value });
     
     // Check if we need to stop calculation
@@ -1568,7 +1579,7 @@ document.getElementById('calculatorForm').addEventListener('submit', (e) => {
             assetType: assetType
         }
     });
-});
+};
 
 // Language switcher event handlers
 document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -2865,7 +2876,8 @@ const TOUR_STEPS = [
     { target: '.enabled-cell', text: 'tourStep6' },
     { target: '#calculateBtn', text: 'tourStep7' },
     { target: '.results-panel', text: 'tourStep8' },
-    { target: '#themeToggleBtn', text: 'tourStep9' },
+    { target: '#currencyButtons', text: 'tourStep9' },
+    { target: '#themeToggleBtn', text: 'tourStep10' },
 ];
 
 let tourStep = 0;
