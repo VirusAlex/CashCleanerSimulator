@@ -90,6 +90,7 @@ export const TRANSLATIONS = {
         tourStep6: 'Use checkboxes to enable or disable specific denominations',
         tourStep7: 'Hit Calculate to get packing options',
         tourStep8: 'Results will appear here — pick a variant and execute the order',
+        tourStep9: 'Clicking the highlighted currecy also cacluates the packing options',
     },
     ru: {
         title: 'Cash Cleaner Calculator',
@@ -182,5 +183,6 @@ export const TRANSLATIONS = {
         tourStep6: 'Чекбоксы включают и отключают отдельные номиналы',
         tourStep7: 'Нажмите Посчитать для расчёта вариантов',
         tourStep8: 'Здесь появятся результаты — выберите вариант и выполните заказ',
+        tourStep9: 'При нажатии на выделенную валюту также рассчитываются варианты упаковки.',
     }
 };

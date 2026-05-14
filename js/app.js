@@ -1543,7 +1543,7 @@ function handleFormSubmission () {
             assetType: assetType
         }
     });
-});
+};
 
 // Language switcher event handlers
 document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -2832,6 +2832,7 @@ const TOUR_STEPS = [
     { target: '.enabled-cell', text: 'tourStep6' },
     { target: '#calculateBtn', text: 'tourStep7' },
     { target: '.results-panel', text: 'tourStep8' },
+    { target: '#currencyButtons', text: 'tourStep9' },
 ];
 
 let tourStep = 0;
