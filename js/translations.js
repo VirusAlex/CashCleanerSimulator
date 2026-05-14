@@ -91,6 +91,10 @@ export const TRANSLATIONS = {
         tourStep7: 'Hit Calculate to get packing options',
         tourStep8: 'Results will appear here — pick a variant and execute the order',
         tourStep9: 'Clicking the highlighted currecy also cacluates the packing options',
+        tourStep10: 'Switch between light and dark themes',
+        themeToggle: 'Toggle theme',
+        themeLight: 'Switch to light theme',
+        themeDark: 'Switch to dark theme',
     },
     ru: {
         title: 'Cash Cleaner Calculator',
@@ -184,5 +188,9 @@ export const TRANSLATIONS = {
         tourStep7: 'Нажмите Посчитать для расчёта вариантов',
         tourStep8: 'Здесь появятся результаты — выберите вариант и выполните заказ',
         tourStep9: 'При нажатии на выделенную валюту также рассчитываются варианты упаковки.',
+        tourStep10: 'Переключение между светлой и тёмной темами',
+        themeToggle: 'Переключить тему',
+        themeLight: 'Переключить на светлую тему',
+        themeDark: 'Переключить на тёмную тему',
     }
 };

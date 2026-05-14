@@ -1891,3 +1891,441 @@ body.currency-gbp.asset-coins {
 .tour-next-btn:hover {
     background: var(--primary-hover);
 }
+
+/* Theme toggle button */
+.theme-toggle-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+/* ===== Dark theme — neon (UV) ===== */
+body[data-theme="dark"] {
+    --primary-color: #a855f7;
+    --primary-hover: #c084fc;
+    --secondary-color: #16142e;
+    --accent-color: #22e8a0;
+    --danger-color: #ff4d6d;
+    --warning-color: #fbbf24;
+    --text-primary: #e9e2f5;
+    --text-secondary: #a89bbf;
+    --border-color: #322a53;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+
+    --neon-uv: #a855f7;
+    --neon-magenta: #f472b6;
+    --neon-green: #22e8a0;
+    --neon-glow-uv: 0 0 0 1px rgba(168, 85, 247, 0.5), 0 0 12px rgba(168, 85, 247, 0.5);
+    --neon-glow-green: 0 0 0 1px rgba(34, 232, 160, 0.5), 0 0 12px rgba(34, 232, 160, 0.45);
+}
+
+/* Darker overlay on currency backgrounds */
+body[data-theme="dark"].currency-usd {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.85) 100%), url('../img/usd.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+body[data-theme="dark"].currency-eur {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.85) 100%), url('../img/eur.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+body[data-theme="dark"].currency-jpy {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.85) 100%), url('../img/jpy.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+body[data-theme="dark"].currency-gbp {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.85) 100%), url('../img/gbp.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+body[data-theme="dark"].currency-usd.asset-coins {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%), url('../img/usd_coins.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+body[data-theme="dark"].currency-eur.asset-coins {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%), url('../img/eur_coins.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+body[data-theme="dark"].currency-jpy.asset-coins {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%), url('../img/jpy_coins.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+body[data-theme="dark"].currency-gbp.asset-coins {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%), url('../img/gbp_coins.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: black;
+}
+
+/* Panels — switch white surface to dark */
+body[data-theme="dark"] .input-panel,
+body[data-theme="dark"] .results-panel {
+    background: #0d0a1f;
+    color: var(--text-primary);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(168, 85, 247, 0.08), 0 0 30px rgba(168, 85, 247, 0.05);
+}
+
+body[data-theme="dark"] .stock-section {
+    background: #16142e;
+}
+
+body[data-theme="dark"] .stock-multi-currency {
+    background: #0d0a1f;
+}
+
+body[data-theme="dark"] .stock-table th,
+body[data-theme="dark"] .stock-table-single th {
+    background: #16142e;
+    color: var(--text-primary);
+}
+
+/* Form inputs */
+body[data-theme="dark"] .form-group input,
+body[data-theme="dark"] .form-group select,
+body[data-theme="dark"] .stock-table .stock-cell input,
+body[data-theme="dark"] .stock-table-single .stock-cell input,
+body[data-theme="dark"] .stock-input input {
+    background: #16142e;
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+body[data-theme="dark"] .form-group input:focus,
+body[data-theme="dark"] .form-group select:focus,
+body[data-theme="dark"] .stock-table .stock-cell input:focus,
+body[data-theme="dark"] .stock-table-single .stock-cell input:focus {
+    border-color: var(--neon-uv);
+    box-shadow: var(--neon-glow-uv);
+}
+
+body[data-theme="dark"] .stock-table .stock-cell input:disabled,
+body[data-theme="dark"] .stock-table-single .stock-cell input:disabled {
+    background: #0d0a1f;
+    color: #475569;
+}
+
+body[data-theme="dark"] .stock-table .empty-cell {
+    background: #0d0a1f;
+    color: #475569;
+}
+
+body[data-theme="dark"] .currency-header {
+    background: #16142e;
+}
+
+body[data-theme="dark"] .stock-table-wrapper {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body[data-theme="dark"] .stock-table-wrapper.active {
+    border-color: var(--neon-uv);
+    box-shadow: var(--neon-glow-uv);
+}
+
+/* Currency buttons */
+body[data-theme="dark"] .currency-btn {
+    background: #16142e;
+    color: var(--text-primary);
+}
+
+body[data-theme="dark"] .currency-btn:hover {
+    border-color: var(--neon-uv);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+}
+
+body[data-theme="dark"] .currency-btn.active {
+    background: var(--primary-color);
+    color: #0d0a1f;
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.55);
+}
+
+/* Display order switches */
+body[data-theme="dark"] #stockModeSwitch.display-order-switch {
+    background: #16142e;
+}
+
+body[data-theme="dark"] .order-btn:hover {
+    background: rgba(168, 85, 247, 0.12);
+    color: var(--neon-uv);
+}
+
+body[data-theme="dark"] .order-btn.active {
+    background: var(--primary-color);
+    color: #0d0a1f;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+/* Result variants */
+body[data-theme="dark"] .variant {
+    background: #16142e;
+    border-left-color: var(--neon-uv);
+    box-shadow: -4px 0 12px rgba(168, 85, 247, 0.12);
+}
+
+body[data-theme="dark"] .variant.loose {
+    border-left-color: var(--warning-color);
+    box-shadow: -4px 0 12px rgba(251, 191, 36, 0.15);
+}
+
+body[data-theme="dark"] .variant-total {
+    color: var(--neon-uv);
+    text-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+body[data-theme="dark"] .breakdown-item {
+    background: #0d0a1f;
+    color: var(--text-primary);
+}
+
+/* Calculate button — primary glow */
+body[data-theme="dark"] .btn {
+    background: var(--primary-color);
+    color: #0d0a1f;
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+}
+
+body[data-theme="dark"] .btn:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 0 26px rgba(168, 85, 247, 0.7);
+}
+
+/* Disabled main button */
+body[data-theme="dark"] .btn:disabled {
+    background: #475569;
+    color: #94a3b8;
+    box-shadow: none;
+}
+
+body[data-theme="dark"] .btn.stop-btn {
+    background: var(--danger-color);
+    color: white;
+    box-shadow: 0 0 18px rgba(255, 77, 109, 0.45);
+}
+
+/* Dialogs */
+body[data-theme="dark"] .custom-dialog-content,
+body[data-theme="dark"] .block-modal-content {
+    background: #0d0a1f;
+    color: var(--text-primary);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(168, 85, 247, 0.15), 0 0 40px rgba(168, 85, 247, 0.1);
+}
+
+body[data-theme="dark"] .stock-changes {
+    background: #16142e;
+}
+
+body[data-theme="dark"] .dialog-btn-secondary {
+    background: #16142e;
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+body[data-theme="dark"] .dialog-btn-secondary:hover {
+    background: #251f47;
+}
+
+body[data-theme="dark"] .dialog-btn-primary {
+    background: var(--neon-green);
+    color: #0d0a1f;
+    box-shadow: 0 0 14px rgba(34, 232, 160, 0.45);
+}
+
+body[data-theme="dark"] .dialog-btn-primary:hover {
+    background: #4cf2b8;
+    box-shadow: 0 0 22px rgba(34, 232, 160, 0.7);
+}
+
+body[data-theme="dark"] .dialog-btn-primary.danger {
+    background: var(--danger-color);
+    color: white;
+    box-shadow: 0 0 14px rgba(255, 77, 109, 0.5);
+}
+
+/* Buttons in modals */
+body[data-theme="dark"] .viz-btn {
+    background: #16142e;
+    color: var(--neon-uv);
+    border-color: var(--neon-uv);
+}
+
+body[data-theme="dark"] .viz-btn:hover {
+    background: var(--primary-color);
+    color: #0d0a1f;
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.55);
+}
+
+body[data-theme="dark"] .execute-order-btn {
+    background: var(--neon-green) !important;
+    color: #0d0a1f !important;
+    border-color: var(--neon-green) !important;
+    box-shadow: 0 0 16px rgba(34, 232, 160, 0.5);
+}
+
+body[data-theme="dark"] .execute-order-btn:hover {
+    background: #4cf2b8 !important;
+    border-color: #4cf2b8 !important;
+    box-shadow: 0 0 26px rgba(34, 232, 160, 0.75);
+}
+
+/* Bundle / coin pieces — slight luminance */
+body[data-theme="dark"] .bundle,
+body[data-theme="dark"] .coin-roll {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 6px rgba(255, 255, 255, 0.06);
+}
+
+/* Block container glow */
+body[data-theme="dark"] .block-container {
+    border-color: var(--border-color);
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.12);
+}
+
+body[data-theme="dark"] .block-container:hover {
+    box-shadow: 0 0 22px rgba(168, 85, 247, 0.3);
+}
+
+/* Checkboxes default surface */
+body[data-theme="dark"] .enabled-checkbox .checkbox-label {
+    background: #16142e;
+}
+
+body[data-theme="dark"] .enabled-checkbox input[type="checkbox"]:checked + .checkbox-label {
+    box-shadow: 0 0 10px rgba(34, 232, 160, 0.5);
+}
+
+/* Error / success notices */
+body[data-theme="dark"] .error {
+    background: rgba(255, 77, 109, 0.12);
+    border-color: rgba(255, 77, 109, 0.4);
+    color: #ff8da3;
+}
+
+body[data-theme="dark"] .success {
+    background: rgba(34, 232, 160, 0.12);
+    border-color: rgba(34, 232, 160, 0.4);
+    color: #6ef0bb;
+}
+
+/* Tour tooltip */
+body[data-theme="dark"] .tour-tooltip {
+    background: #0d0a1f;
+    color: var(--text-primary);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(168, 85, 247, 0.25), 0 0 24px rgba(168, 85, 247, 0.2);
+}
+
+body[data-theme="dark"] .tour-backdrop {
+    border-color: var(--neon-uv);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55), 0 0 24px rgba(168, 85, 247, 0.5);
+}
+
+body[data-theme="dark"] .tour-next-btn {
+    background: var(--primary-color);
+    color: #0d0a1f;
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+}
+
+body[data-theme="dark"] .tour-next-btn:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.6);
+}
+
+/* Order legend */
+body[data-theme="dark"] .order-legend {
+    background: rgba(168, 85, 247, 0.08);
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+body[data-theme="dark"] .order-legend-title {
+    color: var(--neon-uv);
+    text-shadow: 0 0 6px rgba(168, 85, 247, 0.4);
+}
+
+/* Header — violet-tinted text and glow */
+body[data-theme="dark"] .header {
+    color: #f3e8ff;
+}
+
+body[data-theme="dark"] .header h1 {
+    color: #f3e8ff;
+    text-shadow: 0 0 14px rgba(168, 85, 247, 0.55), 0 0 28px rgba(168, 85, 247, 0.25), 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+body[data-theme="dark"] .header p {
+    color: #d8b4fe;
+}
+
+/* Currency indicator */
+body[data-theme="dark"] .currency-indicator {
+    color: var(--neon-uv);
+    text-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+/* Top glass-style buttons — violet tint instead of plain white */
+body[data-theme="dark"] .lang-btn,
+body[data-theme="dark"] .tour-link,
+body[data-theme="dark"] .github-link,
+body[data-theme="dark"] .steam-link,
+body[data-theme="dark"] .theme-toggle-btn {
+    background: rgba(168, 85, 247, 0.18);
+    border-color: rgba(168, 85, 247, 0.4);
+    color: #f3e8ff;
+}
+
+body[data-theme="dark"] .lang-btn:hover,
+body[data-theme="dark"] .tour-link:hover,
+body[data-theme="dark"] .github-link:hover,
+body[data-theme="dark"] .steam-link:hover,
+body[data-theme="dark"] .theme-toggle-btn:hover {
+    background: rgba(168, 85, 247, 0.32);
+    border-color: var(--neon-uv);
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.5);
+    color: #f3e8ff;
+}
+
+body[data-theme="dark"] .lang-separator {
+    color: rgba(216, 180, 254, 0.5);
+}
+
+body[data-theme="dark"] .lang-btn.active {
+    background: rgba(168, 85, 247, 0.85);
+    color: #0d0a1f;
+    border-color: var(--neon-uv);
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.6);
+}
