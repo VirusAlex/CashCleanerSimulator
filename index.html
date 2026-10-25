@@ -105,6 +105,9 @@
                                         <i class="fas fa-coins"></i> <span data-i18n="coins">Coins</span>
                                     </button>
                                 </div>
+                                <button type="button" class="btn-scan-import" id="scanImportOpenBtn">
+                                    <i class="fas fa-paste"></i> <span data-i18n="scanImportBtn">Import from game</span>
+                                </button>
                                 <div style="display: flex; gap: 10px;">
                                     <div class="display-order-switch" id="stockModeSwitch">
                                         <button type="button" class="order-btn active" data-mode="bundles" title="Bundle Stock">
@@ -196,6 +199,26 @@
             <div class="custom-dialog-footer">
                 <button class="dialog-btn dialog-btn-secondary" id="dialogCancelBtn" data-i18n="cancel">Cancel</button>
                 <button class="dialog-btn dialog-btn-primary" id="dialogConfirmBtn" data-i18n="confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scan Import Modal -->
+    <div class="custom-dialog-modal" id="scanImportModal">
+        <div class="custom-dialog-content">
+            <div class="custom-dialog-header">
+                <h3 data-i18n="scanImportModalTitle">Import scan from game</h3>
+            </div>
+            <div class="custom-dialog-body">
+                <p data-i18n="scanImportHint">In-game, scan the cash with the scanner, then press F8 (CCS_ScanExport mod) to copy the result to the clipboard. Paste it below.</p>
+                <textarea id="scanImportTextarea" class="scan-import-textarea" rows="10"
+                          data-i18n-placeholder="scanImportPlaceholder"
+                          placeholder="Paste scan result here (starts with &quot;CCS-SCAN v1&quot;)..."></textarea>
+                <p id="scanImportMessage" class="scan-import-message"></p>
+            </div>
+            <div class="custom-dialog-footer">
+                <button class="dialog-btn dialog-btn-secondary" id="scanImportCancelBtn" data-i18n="cancel">Cancel</button>
+                <button class="dialog-btn dialog-btn-primary" id="scanImportApplyBtn" data-i18n="scanImportApply">Import</button>
             </div>
         </div>
     </div>

@@ -229,6 +229,14 @@ function applyLanguage(lang) {
         }
     });
 
+    // Update translatable placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-i18n-placeholder');
+        if (TRANSLATIONS[lang][key]) {
+            element.placeholder = TRANSLATIONS[lang][key];
+        }
+    });
+
     // No tooltip updates needed — help hints use tour-style popups now
 
     // Update page title
@@ -516,6 +524,108 @@ function loadStockData() {
     } catch (e) {
         console.warn('Failed to load stock data:', e);
     }
+}
+
+// ====================================================================
+// SCAN IMPORT (paste from the in-game CCS_ScanExport UE4SS mod)
+// ====================================================================
+
+// Parses the "CCS-SCAN v1" clipboard format produced by the CCS_ScanExport
+// mod: a header line followed by "<CURRENCY> <denom> x<count>" lines, one
+// per denomination tile shown on the game's scanner result panel.
+function parseScanImportText(text) {
+    const lines = String(text || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0 || !lines[0].startsWith('CCS-SCAN')) {
+        return { entries: [], unknownCount: 0, invalid: true };
+    }
+
+    const lineRe = /^(USD|EUR|JPY|GBP)\s+([\d.]+)\s+x(\d+)$/;
+    const entries = [];
+    let unknownCount = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+        const match = lines[i].match(lineRe);
+        if (!match) { unknownCount++; continue; }
+
+        const [, currency, denomStr, countStr] = match;
+        const denom = parseFloat(denomStr);
+        const count = parseInt(countStr, 10);
+        const isBill = (CURRENCIES[currency] || []).includes(denom);
+        const isCoin = (COIN_CURRENCIES[currency] || []).includes(denom);
+        if (!isBill && !isCoin || !Number.isFinite(count)) { unknownCount++; continue; }
+
+        entries.push({ currency, denom, count, kind: isBill ? 'bills' : 'coins' });
+    }
+
+    return { entries, unknownCount, invalid: false };
+}
+
+// Merges scanned denomination counts into the given stock localStorage key,
+// as loose-piece counts (the "bills" mode bucket — scanned numbers are raw
+// piece counts, not bundle counts), without disturbing unrelated entries.
+function mergeScanEntriesIntoStorage(storageKey, entries) {
+    if (entries.length === 0) return;
+
+    let allStockData = {};
+    try {
+        const existing = localStorage.getItem(storageKey);
+        if (existing) allStockData = JSON.parse(existing);
+    } catch (e) {
+        console.warn('Failed to parse existing stock data for scan import:', e);
+    }
+    if (!allStockData.bundles) allStockData.bundles = { data: {}, enabled: {} };
+    if (!allStockData.bills) allStockData.bills = { data: {}, enabled: {} };
+
+    entries.forEach(({ currency, denom, count }) => {
+        const key = `${currency}_${denom}`;
+        allStockData.bills.data[key] = String(count);
+        allStockData.bills.enabled[key] = true;
+        allStockData.bundles.enabled[key] = true;
+    });
+
+    localStorage.setItem(storageKey, JSON.stringify(allStockData));
+}
+
+// Applies pasted scan text: merges it into stock storage and refreshes the
+// UI to show it. Returns { ok, message } for display in the modal.
+function applyScanImport(text) {
+    const { entries, unknownCount, invalid } = parseScanImportText(text);
+    if (invalid) {
+        return { ok: false, message: t('scanImportInvalidFormat') };
+    }
+    if (entries.length === 0) {
+        return { ok: false, message: t('scanImportEmpty') };
+    }
+
+    // Preserve any unsaved manual edits in the currently visible table first.
+    saveStockData();
+
+    const billEntries = entries.filter(e => e.kind === 'bills');
+    const coinEntries = entries.filter(e => e.kind === 'coins');
+    mergeScanEntriesIntoStorage('cash-cleaner-stock', billEntries);
+    mergeScanEntriesIntoStorage('cash-cleaner-coin-stock', coinEntries);
+
+    // Scanned data is always a loose piece count, stored in the "bills"
+    // (loose) bucket — this never touches bundle-mode manual entries.
+    // Don't force-switch stockMode/assetType: that would yank the user away
+    // from whatever they were manually entering. Only refresh the on-screen
+    // table if it's already showing the loose-stock view that the import
+    // actually landed in.
+    const importedIntoCurrentView =
+        stockMode === 'bills' &&
+        ((assetType === 'bills' && billEntries.length > 0) || (assetType === 'coins' && coinEntries.length > 0));
+    if (importedIntoCurrentView) {
+        loadStockData();
+    }
+
+    let message = t('scanImportSuccess', { count: entries.length });
+    if (!importedIntoCurrentView) {
+        message += ' ' + t('scanImportSwitchToSee');
+    }
+    if (unknownCount > 0) {
+        message += ' ' + t('scanImportSkipped', { count: unknownCount });
+    }
+    return { ok: true, message };
 }
 
 // ====================================================================
@@ -2831,6 +2941,48 @@ document.getElementById('blockModal').addEventListener('click', (e) => {
             clearInterval(rotationInterval);
             rotationInterval = null;
         }
+    }
+});
+
+// Scan import modal
+function openScanImportModal() {
+    const modal = document.getElementById('scanImportModal');
+    const textarea = document.getElementById('scanImportTextarea');
+    const message = document.getElementById('scanImportMessage');
+    textarea.value = '';
+    message.textContent = '';
+    message.classList.remove('success', 'error');
+    modal.classList.add('show');
+    textarea.focus();
+}
+
+function closeScanImportModal() {
+    document.getElementById('scanImportModal').classList.remove('show');
+}
+
+document.getElementById('scanImportOpenBtn').addEventListener('click', () => {
+    track('open_scan_import');
+    openScanImportModal();
+});
+
+document.getElementById('scanImportCancelBtn').addEventListener('click', closeScanImportModal);
+
+document.getElementById('scanImportModal').addEventListener('click', (e) => {
+    if (e.target.id === 'scanImportModal') closeScanImportModal();
+});
+
+document.getElementById('scanImportApplyBtn').addEventListener('click', () => {
+    const textarea = document.getElementById('scanImportTextarea');
+    const message = document.getElementById('scanImportMessage');
+    const result = applyScanImport(textarea.value);
+
+    message.textContent = result.message;
+    message.classList.toggle('success', result.ok);
+    message.classList.toggle('error', !result.ok);
+    track('scan_import', { success: result.ok });
+
+    if (result.ok) {
+        setTimeout(closeScanImportModal, 1200);
     }
 });
 

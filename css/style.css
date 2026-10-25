@@ -1071,6 +1071,55 @@ body.currency-gbp.asset-coins {
     background: #dc2626;
 }
 
+/* Scan Import */
+.btn-scan-import {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--secondary-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-scan-import:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.scan-import-textarea {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.scan-import-message {
+    min-height: 1.2em;
+    margin-top: 10px !important;
+    font-size: 0.9rem !important;
+}
+
+.scan-import-message.success {
+    color: var(--accent-color);
+}
+
+.scan-import-message.error {
+    color: var(--danger-color);
+}
+
 /* Block Visualization Modal */
 .block-modal {
     position: fixed;

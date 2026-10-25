@@ -4,6 +4,12 @@
 
 Calculator for [Cash Cleaner Simulator](https://store.steampowered.com/app/2488370/Cash_Cleaner_Simulator/) — helps plan how to assemble cash orders from your stock into bundles and blocks.
 
+> This fork adds an **"Import from game"** button to the stock section, which
+> reads a cash breakdown copied to the clipboard by the
+> [CCS_ScanExport game mod](https://github.com/wewerak47/CashCleanerSimulatorCalculator-GameMod)
+> instead of typing stock counts in by hand. This fork is deployed at
+> **[wewerak47.github.io/CashCleanerSimulatorCalculator](https://wewerak47.github.io/CashCleanerSimulatorCalculator/)**.
+
 ---
 
 ## 🇺🇸 English
@@ -19,6 +25,7 @@ The algorithm tries to maximize full blocks (30 bundles = 3,000 bills), then fil
 - **4 currencies**: 🇺🇸 USD, 🇪🇺 EUR, 🇯🇵 JPY, 🇬🇧 GBP with proper denominations and color coding
 - **Bills and coins**: Toggle between banknote and coin asset types
 - **Stock management**: Enter your stock per denomination as bundles or individual bills; balances update when you execute orders
+- **Import from game**: Paste a scan copied by the [CCS_ScanExport mod](https://github.com/wewerak47/CashCleanerSimulatorCalculator-GameMod) to fill in stock automatically instead of typing it in
 - **Multiple variants**: Several packing options ranked by compactness — pick the one that fits
 - **Block visualization**: Assembly dialog shows the packing order; click blocks to mark them as collected
 - **No backend**: All calculations run in the browser. Settings and stock persist in LocalStorage
@@ -49,6 +56,7 @@ Open the [live demo](https://virusalex.github.io/CashCleanerSimulator/) or clone
 - **4 валюты**: 🇺🇸 USD, 🇪🇺 EUR, 🇯🇵 JPY, 🇬🇧 GBP с реальными номиналами и цветовой маркировкой
 - **Купюры и монеты**: Переключение между типами активов
 - **Учёт остатков**: Остатки склада по номиналам — в пачках или поштучно; обновляются при выполнении заказов
+- **Импорт из игры**: Вставьте скан, скопированный [модом CCS_ScanExport](https://github.com/wewerak47/CashCleanerSimulatorCalculator-GameMod), чтобы заполнить остатки автоматически, без ручного ввода
 - **Несколько вариантов**: Раскладки отсортированы по компактности — выбирайте подходящую
 - **Визуализация сборки**: Диалог с порядком сборки; клик по блоку отмечает его как собранный
 - **Без бэкенда**: Все расчёты в браузере. Настройки и остатки в LocalStorage
